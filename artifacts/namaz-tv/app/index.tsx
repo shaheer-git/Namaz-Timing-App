@@ -252,6 +252,10 @@ export default function TVDisplay() {
             ))}
           </View>
         </View>
+
+        <Text style={[styles.watermark, { color: colors.mutedForeground }]}>
+          by Shaheer
+        </Text>
       </View>
     </View>
   );
@@ -437,5 +441,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 4,
     opacity: 0.3,
+  },
+  watermark: {
+    position: "absolute",
+    bottom: 8,
+    right: 16,
+    fontSize: 11,
+    letterSpacing: 1,
+    opacity: 0.45,
+    fontStyle: "italic",
   },
 });
