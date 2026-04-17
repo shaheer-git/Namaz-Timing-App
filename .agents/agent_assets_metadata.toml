@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "IOclVNOhJm1DCfxhasho7"
+uri = "file://artifacts/namaz-tv/assets/images/icon.png"
+type = "image"
+title = "namaz prayer times app icon"

@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Namaz Prayer Times"
+version = "1.0.0"
+id = "artifacts/namaz-tv"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 19501
+
+[services.development]
+run = "pnpm --filter @workspace/namaz-tv run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/namaz-tv", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/namaz-tv", "run", "serve" ]
+
+[services.env]
+PORT = "19501"
+BASE_PATH = "/"
