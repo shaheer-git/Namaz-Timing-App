@@ -30,16 +30,28 @@ const PRAYER_DISPLAY = {
 
 function timeToMinutes(timeStr: string, prayerKey?: string): number {
   if (!timeStr) return 0;
-  let [h, m] = timeStr.split(":").map(Number);
   
-  // Auto-correct 12-hour format strings to 24-hour format for PM prayers
-  if (prayerKey && ["dhuhr", "asr", "maghrib", "isha"].includes(prayerKey)) {
-    if (h !== undefined && h < 12) {
+  const isPMForm = timeStr.toLowerCase().includes("pm");
+  const isAMForm = timeStr.toLowerCase().includes("am");
+  
+  const cleanStr = timeStr.replace(/[^0-9:]/g, "");
+  let [hStr, mStr] = cleanStr.split(":");
+  let h = parseInt(hStr, 10);
+  let m = parseInt(mStr, 10);
+  
+  if (isNaN(h)) h = 0;
+  if (isNaN(m)) m = 0;
+
+  if (isPMForm && h < 12) h += 12;
+  if (isAMForm && h === 12) h = 0;
+
+  if (!isPMForm && !isAMForm && prayerKey && ["dhuhr", "asr", "maghrib", "isha"].includes(prayerKey)) {
+    if (h < 12) {
       h += 12;
     }
   }
   
-  return (h ?? 0) * 60 + (m ?? 0);
+  return h * 60 + m;
 }
 
 export function useNextPrayer(

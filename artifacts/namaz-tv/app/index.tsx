@@ -37,15 +37,28 @@ const SCALE = Math.max(1, SCREEN_H / 720);
 // Helper to convert "HH:mm" to minutes
 function timeToMinutes(timeStr: string, prayerKey?: string): number {
   if (!timeStr) return 0;
-  let [h, m] = timeStr.split(":").map(Number);
   
-  if (prayerKey && ["dhuhr", "asr", "maghrib", "isha"].includes(prayerKey)) {
-    if (h !== undefined && h < 12) {
+  const isPMForm = timeStr.toLowerCase().includes("pm");
+  const isAMForm = timeStr.toLowerCase().includes("am");
+  
+  const cleanStr = timeStr.replace(/[^0-9:]/g, "");
+  let [hStr, mStr] = cleanStr.split(":");
+  let h = parseInt(hStr, 10);
+  let m = parseInt(mStr, 10);
+  
+  if (isNaN(h)) h = 0;
+  if (isNaN(m)) m = 0;
+
+  if (isPMForm && h < 12) h += 12;
+  if (isAMForm && h === 12) h = 0;
+
+  if (!isPMForm && !isAMForm && prayerKey && ["dhuhr", "asr", "maghrib", "isha"].includes(prayerKey)) {
+    if (h < 12) {
       h += 12;
     }
   }
   
-  return (h ?? 0) * 60 + (m ?? 0);
+  return h * 60 + m;
 }
 
 export default function TVDisplay() {
@@ -64,11 +77,11 @@ export default function TVDisplay() {
 
   useEffect(() => {
     if (time.seconds === 0) {
-      const currentTimeStr = `${String(time.hours).padStart(2, "0")}:${String(time.minutes).padStart(2, "0")}`;
+      const currentMins = time.hours * 60 + time.minutes;
       for (const key of PRAYER_ORDER) {
         if (
-          settings.prayerTimes[key].adhan === currentTimeStr ||
-          settings.prayerTimes[key].iqama === currentTimeStr
+          timeToMinutes(settings.prayerTimes[key].adhan, key) === currentMins ||
+          timeToMinutes(settings.prayerTimes[key].iqama, key) === currentMins
         ) {
           playBeep();
           break;
