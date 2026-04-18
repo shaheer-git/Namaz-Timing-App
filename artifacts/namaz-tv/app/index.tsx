@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import Animated, {
   withRepeat,
   withTiming,
   withSequence,
+  interpolateColor,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -23,15 +24,32 @@ import { usePrayer } from "@/context/PrayerContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useNextPrayer, PRAYER_ORDER, PRAYER_ARABIC, PRAYER_DISPLAY } from "@/hooks/useNextPrayer";
 import { PrayerRow } from "@/components/PrayerRow";
-import { IslamicPattern } from "@/components/IslamicPattern";
+import { StarsBackground } from "@/components/StarsBackground";
+import { IslamicMoon } from "@/components/IslamicMoon";
+import { DayBackground } from "@/components/DayBackground";
 import { AnimatedDigit } from "@/components/AnimatedDigit";
+import { useBeep } from "@/hooks/useBeep";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
+const SCALE = Math.max(1, SCREEN_H / 720);
+
+// Helper to convert "HH:mm" to minutes
+function timeToMinutes(timeStr: string, prayerKey?: string): number {
+  if (!timeStr) return 0;
+  let [h, m] = timeStr.split(":").map(Number);
+  
+  if (prayerKey && ["dhuhr", "asr", "maghrib", "isha"].includes(prayerKey)) {
+    if (h !== undefined && h < 12) {
+      h += 12;
+    }
+  }
+  
+  return (h ?? 0) * 60 + (m ?? 0);
+}
+
 export default function TVDisplay() {
   const colors = useColors();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark" || true;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { settings } = usePrayer();
@@ -41,9 +59,40 @@ export default function TVDisplay() {
     time.hours,
     time.minutes
   );
+  
+  const { playBeep } = useBeep();
+
+  useEffect(() => {
+    if (time.seconds === 0) {
+      const currentTimeStr = `${String(time.hours).padStart(2, "0")}:${String(time.minutes).padStart(2, "0")}`;
+      for (const key of PRAYER_ORDER) {
+        if (
+          settings.prayerTimes[key].adhan === currentTimeStr ||
+          settings.prayerTimes[key].iqama === currentTimeStr
+        ) {
+          playBeep();
+          break;
+        }
+      }
+    }
+  }, [time.hours, time.minutes, time.seconds, settings.prayerTimes, playBeep]);
+
+  // Day/Night Logic
+  const currentMinutes = time.hours * 60 + time.minutes;
+  const sunriseMinutes = timeToMinutes(settings.sunriseTime);
+  const sunsetMinutes = timeToMinutes(settings.prayerTimes.maghrib.adhan, "maghrib");
+
+  const isDay = currentMinutes >= sunriseMinutes && currentMinutes < sunsetMinutes;
+  const dayOpacity = useSharedValue(isDay ? 1 : 0);
+  const nightOpacity = useSharedValue(isDay ? 0 : 1);
+
+  useEffect(() => {
+    dayOpacity.value = withTiming(isDay ? 1 : 0, { duration: 3000 });
+    nightOpacity.value = withTiming(isDay ? 0 : 1, { duration: 3000 });
+  }, [isDay]);
 
   const colonOpacity = useSharedValue(1);
-  const glowOpacity = useSharedValue(0.4);
+  const blinkOpacity = useSharedValue(1);
 
   useEffect(() => {
     colonOpacity.value = withRepeat(
@@ -55,63 +104,70 @@ export default function TVDisplay() {
       false
     );
 
-    glowOpacity.value = withRepeat(
+    blinkOpacity.value = withRepeat(
       withSequence(
-        withTiming(0.8, { duration: 2000 }),
-        withTiming(0.3, { duration: 2000 })
+        withTiming(0.4, { duration: 1000 }),
+        withTiming(1, { duration: 1000 })
       ),
       -1,
       true
     );
-  }, [colonOpacity, glowOpacity]);
+  }, []);
 
-  const colonStyle = useAnimatedStyle(() => ({
-    opacity: colonOpacity.value,
-  }));
-
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
-  }));
+  const dayStyle = useAnimatedStyle(() => ({ opacity: dayOpacity.value }));
+  const nightStyle = useAnimatedStyle(() => ({ opacity: nightOpacity.value }));
+  const colonStyle = useAnimatedStyle(() => ({ opacity: colonOpacity.value }));
+  const blinkStyle = useAnimatedStyle(() => ({ opacity: blinkOpacity.value }));
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: isDark ? "#050A14" : "#F8F5EE" },
-      ]}
-    >
-      <IslamicPattern width={SCREEN_W} height={SCREEN_H} color={colors.primary} />
+  // Dynamic colors based on day/night (Rug Theme)
+  const dynamicColors = {
+    text: isDay ? "#FDFDFB" : "#FFFFFF", // Cream for day, White for night
+    subText: isDay ? "#D4AA50" : colors.mutedForeground, // Bold Gold
+    accent: isDay ? "#F0EAD6" : colors.primary, 
+    cardBg: isDay ? "rgba(255, 255, 255, 0.1)" : "rgba(10, 20, 40, 0.6)",
+    mosqueColor: isDay ? "#D4AA50" : "#F0EAD6",
+  };
 
-      <Animated.View
-        style={[
-          styles.glow,
-          glowStyle,
-          { backgroundColor: colors.primary },
-        ]}
-      />
+  const shadow = {
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Night Sky */}
+      <Animated.View style={[StyleSheet.absoluteFill, nightStyle, { backgroundColor: "#020408" }]}>
+        <StarsBackground />
+        <IslamicMoon scale={SCALE} />
+      </Animated.View>
+
+      {/* Day Sky (Now Rug) */}
+      <Animated.View style={[StyleSheet.absoluteFill, dayStyle]}>
+        <DayBackground scale={SCALE} />
+      </Animated.View>
 
       <View
         style={[
           styles.inner,
-          { paddingTop: topPad + 8, paddingBottom: botPad + 8 },
+          { paddingTop: topPad + 12 * SCALE, paddingBottom: botPad + 12 * SCALE },
         ]}
       >
-        <View style={styles.topBar}>
-          <Text style={[styles.mosqueName, { color: colors.primary }]}>
+        <View style={[styles.topBar, { marginBottom: 12 * SCALE }]}>
+          <Text style={[styles.mosqueName, { color: dynamicColors.mosqueColor, fontSize: 24 * SCALE }, shadow]}>
             {settings.mosqueName}
           </Text>
-          <Text style={[styles.mosqueNameArabic, { color: colors.primary }]}>
+          <Text style={[styles.mosqueNameArabic, { color: dynamicColors.accent, fontSize: 22 * SCALE }, shadow]}>
             {settings.mosqueNameArabic}
           </Text>
           <TouchableOpacity
-            style={[styles.settingsBtn, { borderColor: colors.border }]}
+            style={[styles.settingsBtn, { borderColor: dynamicColors.accent, padding: 8 * SCALE }]}
             onPress={() => router.push("/settings")}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Feather name="settings" size={18} color={colors.mutedForeground} />
+            <Feather name="settings" size={20 * SCALE} color={dynamicColors.accent} />
           </TouchableOpacity>
         </View>
 
@@ -120,46 +176,51 @@ export default function TVDisplay() {
             <View style={styles.clockRow}>
               <AnimatedDigit
                 value={time.displayHours}
-                style={[styles.clockDigit, { color: colors.foreground }]}
+                style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 110 * SCALE }, shadow]}
                 animateOnChange={true}
               />
               <Animated.Text
-                style={[styles.clockColon, { color: colors.primary }, colonStyle]}
+                style={[styles.clockColon, { color: dynamicColors.accent, fontSize: 100 * SCALE }, colonStyle, shadow]}
               >
                 :
               </Animated.Text>
               <AnimatedDigit
                 value={time.displayMinutes}
-                style={[styles.clockDigit, { color: colors.foreground }]}
+                style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 110 * SCALE }, shadow]}
                 animateOnChange={true}
               />
-              <View style={styles.clockMeta}>
-                <Text style={[styles.clockSeconds, { color: colors.primary }]}>
+              <View style={[styles.clockMeta, { marginLeft: 12 * SCALE }]}>
+                <Text style={[styles.clockSeconds, { color: dynamicColors.accent, fontSize: 32 * SCALE }, shadow]}>
                   {time.displaySeconds}
                 </Text>
                 <View
                   style={[
                     styles.periodBadge,
-                    { backgroundColor: colors.primary + "30", borderColor: colors.primary },
+                    { 
+                      backgroundColor: dynamicColors.accent + "20", 
+                      borderColor: dynamicColors.accent,
+                      paddingHorizontal: 8 * SCALE,
+                      paddingVertical: 4 * SCALE
+                    },
                   ]}
                 >
-                  <Text style={[styles.periodText, { color: colors.primary }]}>
+                  <Text style={[styles.periodText, { color: dynamicColors.accent, fontSize: 18 * SCALE }, shadow]}>
                     {time.period}
                   </Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.dateBlock}>
-              <Text style={[styles.dayName, { color: colors.primary }]}>
+            <View style={[styles.dateBlock, { gap: 4 * SCALE }]}>
+              <Text style={[styles.dayName, { color: dynamicColors.accent, fontSize: 24 * SCALE }, shadow]}>
                 {time.dayName}
               </Text>
-              <Text style={[styles.hijriDate, { color: colors.mutedForeground }]}>
+              <Text style={[styles.hijriDate, { color: dynamicColors.subText, fontSize: 18 * SCALE }, shadow]}>
                 {time.hijriDay} {time.hijriMonth} {time.hijriYear}
               </Text>
-              <Text style={[styles.gregorianDate, { color: colors.foreground }]}>
+              <Text style={[styles.gregorianDate, { color: dynamicColors.text, fontSize: 22 * SCALE }, shadow]}>
                 {time.dayNumber}{" "}
-                <Text style={{ color: colors.primary, fontWeight: "700" }}>
+                <Text style={{ color: dynamicColors.accent, fontWeight: "900" }}>
                   {time.monthName}
                 </Text>{" "}
                 {time.year}
@@ -169,24 +230,30 @@ export default function TVDisplay() {
             <View
               style={[
                 styles.extraCard,
-                { backgroundColor: colors.card + "CC", borderColor: colors.border },
+                { 
+                  backgroundColor: dynamicColors.cardBg, 
+                  borderColor: dynamicColors.accent + "30",
+                  paddingVertical: 14 * SCALE,
+                  paddingHorizontal: 20 * SCALE,
+                  gap: 32 * SCALE
+                },
               ]}
             >
               {settings.showSunrise && (
-                <View style={styles.extraItem}>
-                  <Text style={[styles.extraLabel, { color: colors.mutedForeground }]}>
+                <View style={[styles.extraItem, { gap: 4 * SCALE }]}>
+                  <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 12 * SCALE }, shadow]}>
                     Sunrise
                   </Text>
-                  <Text style={[styles.extraValue, { color: colors.foreground }]}>
+                  <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 24 * SCALE }, shadow]}>
                     {settings.sunriseTime}
                   </Text>
                 </View>
               )}
-              <View style={styles.extraItem}>
-                <Text style={[styles.extraLabel, { color: colors.mutedForeground }]}>
+              <View style={[styles.extraItem, { gap: 4 * SCALE }]}>
+                <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 12 * SCALE }, shadow]}>
                   Jumu'ah
                 </Text>
-                <Text style={[styles.extraValue, { color: colors.foreground }]}>
+                <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 24 * SCALE }, shadow]}>
                   {settings.jumuahTime}
                 </Text>
               </View>
@@ -195,65 +262,83 @@ export default function TVDisplay() {
             <View
               style={[
                 styles.nextPrayerCard,
-                { backgroundColor: colors.accent + "20", borderColor: colors.accent + "60" },
+                { 
+                  backgroundColor: colors.accent + "25", 
+                  borderColor: colors.accent + "60",
+                  paddingVertical: 14 * SCALE,
+                  paddingHorizontal: 20 * SCALE,
+                },
               ]}
             >
-              <Text style={[styles.nextLabel, { color: colors.accent }]}>
+              <Text style={[styles.nextLabel, { color: colors.accent, fontSize: 14 * SCALE }, shadow]}>
                 Next Prayer
               </Text>
-              <Text style={[styles.nextName, { color: colors.foreground }]}>
+              <Animated.Text style={[styles.nextName, { color: dynamicColors.text, fontSize: 32 * SCALE }, blinkStyle, shadow]}>
                 {nextPrayer.name}
-              </Text>
-              <Text style={[styles.nextCountdown, { color: colors.accent }]}>
+              </Animated.Text>
+              <Animated.Text style={[styles.nextCountdown, { color: colors.accent, fontSize: 20 * SCALE }, blinkStyle, shadow]}>
                 {nextPrayer.hoursUntil > 0
                   ? `${nextPrayer.hoursUntil}h ${nextPrayer.minutesUntil}m`
                   : `${nextPrayer.minutesUntil} min`}
-              </Text>
+              </Animated.Text>
             </View>
           </View>
 
           <View
-            style={[styles.divider, { backgroundColor: colors.border }]}
+            style={[styles.divider, { backgroundColor: dynamicColors.accent, opacity: 0.1 }]}
           />
 
           <View style={styles.rightCol}>
-            <View style={styles.prayerHeader}>
+            <View style={[styles.prayerHeader, { paddingVertical: 10 * SCALE }]}>
               <View style={styles.prayerNameHeader}>
-                <Text style={[styles.headerLabel, { color: colors.mutedForeground }]}>
+                <Text style={[styles.headerLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }, shadow]}>
                   Prayer
                 </Text>
               </View>
               <View style={styles.timeHeader}>
-                <Text style={[styles.headerLabel, { color: colors.mutedForeground }]}>
+                <Text style={[styles.headerLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }, shadow]}>
                   Adhan
                 </Text>
               </View>
               <View style={styles.timeHeader}>
-                <Text style={[styles.headerLabel, { color: colors.mutedForeground }]}>
+                <Text style={[styles.headerLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }, shadow]}>
                   Iqama
                 </Text>
               </View>
             </View>
 
             <View
-              style={[styles.headerUnderline, { backgroundColor: colors.border }]}
+              style={[styles.headerUnderline, { backgroundColor: dynamicColors.accent, opacity: 0.2, marginBottom: 8 * SCALE }]}
             />
 
-            {PRAYER_ORDER.map((key) => (
-              <PrayerRow
-                key={key}
-                arabicName={PRAYER_ARABIC[key]}
-                englishName={PRAYER_DISPLAY[key]}
-                adhan={settings.prayerTimes[key].adhan}
-                iqama={settings.prayerTimes[key].iqama}
-                isCurrent={nextPrayer.currentPrayerKey === key}
-                isNext={nextPrayer.name.toLowerCase() === PRAYER_DISPLAY[key].toLowerCase()}
-              />
-            ))}
+            {PRAYER_ORDER.map((key) => {
+              const pAdhan = settings.prayerTimes[key].adhan;
+              const pIqama = settings.prayerTimes[key].iqama;
+              
+              const isNextPrayer = nextPrayer.nextPrayerKey === key;
+              const isNextAdhan = isNextPrayer && nextPrayer.nextEvent === "adhan";
+              const isNextIqama = isNextPrayer && nextPrayer.nextEvent === "iqama";
+
+              return (
+                <PrayerRow
+                  key={key}
+                  arabicName={PRAYER_ARABIC[key]}
+                  englishName={PRAYER_DISPLAY[key]}
+                  adhan={pAdhan}
+                  iqama={pIqama}
+                  isHighlighted={isNextPrayer}
+                  blinkAdhan={isNextAdhan}
+                  blinkIqama={isNextIqama}
+                  scale={SCALE}
+                  isDay={isDay}
+                  isRug={true}
+                />
+              );
+            })}
           </View>
         </View>
 
-        <Text style={[styles.watermark, { color: colors.mutedForeground }]}>
+        <Text style={[styles.watermark, { color: dynamicColors.subText, fontSize: 12 * SCALE }]}>
           by Shaheer
         </Text>
       </View>
@@ -264,163 +349,129 @@ export default function TVDisplay() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  glow: {
-    position: "absolute",
-    top: -100,
-    left: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    opacity: 0.05,
-    transform: [{ scale: 2 }],
+    backgroundColor: "black",
   },
   inner: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
   },
   mosqueName: {
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: 1.5,
+    fontWeight: "900",
+    letterSpacing: 2,
     textTransform: "uppercase",
     flex: 1,
   },
   mosqueNameArabic: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginRight: 12,
+    fontWeight: "800",
+    marginRight: 16,
   },
   settingsBtn: {
-    padding: 6,
     borderRadius: 8,
     borderWidth: 1,
   },
   mainRow: {
     flex: 1,
     flexDirection: "row",
-    gap: 20,
+    gap: 30,
   },
   leftCol: {
     flex: 1.1,
     justifyContent: "center",
-    gap: 14,
+    gap: 20,
   },
   clockRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   clockDigit: {
-    fontSize: 72,
-    fontWeight: "300",
+    fontWeight: "900",
     letterSpacing: -2,
     includeFontPadding: false,
   },
   clockColon: {
-    fontSize: 60,
-    fontWeight: "200",
+    fontWeight: "700",
     marginHorizontal: 4,
-    marginTop: -8,
+    marginTop: -10,
   },
   clockMeta: {
-    marginLeft: 8,
     justifyContent: "center",
-    gap: 6,
+    gap: 8,
   },
   clockSeconds: {
-    fontSize: 22,
-    fontWeight: "500",
+    fontWeight: "800",
     letterSpacing: 1,
   },
   periodBadge: {
     borderWidth: 1,
     borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
   },
   periodText: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "900",
     letterSpacing: 1,
   },
   dateBlock: {
-    gap: 3,
   },
   dayName: {
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 2,
+    fontWeight: "900",
+    letterSpacing: 3,
     textTransform: "uppercase",
   },
   hijriDate: {
-    fontSize: 13,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: "700",
   },
   gregorianDate: {
-    fontSize: 17,
-    fontWeight: "500",
-    letterSpacing: 0.5,
+    fontWeight: "800",
+    letterSpacing: 1,
   },
   extraCard: {
     flexDirection: "row",
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    gap: 24,
   },
   extraItem: {
-    gap: 2,
   },
   extraLabel: {
-    fontSize: 10,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
+    fontWeight: "800",
   },
   extraValue: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "900",
     letterSpacing: 1,
   },
   nextPrayerCard: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
   },
   nextLabel: {
-    fontSize: 10,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 4,
+    fontWeight: "800",
   },
   nextName: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "900",
   },
   nextCountdown: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: 2,
+    fontWeight: "800",
+    marginTop: 4,
   },
   divider: {
-    width: 1,
-    marginVertical: 4,
-    opacity: 0.4,
+    width: 2,
+    marginVertical: 10,
   },
   rightCol: {
-    flex: 1.9,
+    flex: 2.1,
     justifyContent: "center",
   },
   prayerHeader: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 20,
   },
   prayerNameHeader: {
     flex: 2,
@@ -431,24 +482,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerLabel: {
-    fontSize: 11,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
     textTransform: "uppercase",
-    fontWeight: "600",
+    fontWeight: "900",
   },
   headerUnderline: {
-    height: 1,
-    marginHorizontal: 16,
-    marginBottom: 4,
-    opacity: 0.3,
+    height: 1.5,
+    marginHorizontal: 20,
   },
   watermark: {
     position: "absolute",
-    bottom: 8,
-    right: 16,
-    fontSize: 11,
+    bottom: 12,
+    right: 24,
     letterSpacing: 1,
     opacity: 0.45,
     fontStyle: "italic",
+    fontWeight: "700",
   },
 });
+
+

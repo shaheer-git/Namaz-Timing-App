@@ -25,18 +25,18 @@ export interface PrayerSettings {
 }
 
 const defaultSettings: PrayerSettings = {
-  mosqueName: "Jamiya Masjid",
-  mosqueNameArabic: "جامع المسجد",
+  mosqueName: "Jamiya Masjid Sakleshpur",
+  mosqueNameArabic: "جامع المسجد شكليشبور",
   prayerTimes: {
-    fajr: { adhan: "05:15", iqama: "05:45" },
-    dhuhr: { adhan: "01:00", iqama: "01:30" },
-    asr: { adhan: "05:00", iqama: "05:15" },
-    maghrib: { adhan: "06:40", iqama: "06:44" },
-    isha: { adhan: "08:00", iqama: "08:15" },
+    fajr: { adhan: "05:15", iqama: "05:40" },
+    dhuhr: { adhan: "13:00", iqama: "13:30" },
+    asr: { adhan: "17:00", iqama: "17:15" },
+    maghrib: { adhan: "18:40", iqama: "18:44" },
+    isha: { adhan: "20:00", iqama: "20:15" },
   },
   showSunrise: true,
   sunriseTime: "06:18",
-  jumuahTime: "01:45",
+  jumuahTime: "13:45",
 };
 
 interface PrayerContextType {

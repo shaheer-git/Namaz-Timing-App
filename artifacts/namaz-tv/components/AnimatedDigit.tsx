@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { TextStyle } from "react-native";
+import { TextStyle, StyleProp } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,7 +9,7 @@ import Animated, {
 
 interface AnimatedDigitProps {
   value: string;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
   animateOnChange?: boolean;
 }
 

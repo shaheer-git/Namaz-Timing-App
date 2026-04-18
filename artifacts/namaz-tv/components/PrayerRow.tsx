@@ -4,6 +4,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withRepeat,
+  withSequence,
 } from "react-native-reanimated";
 import { useColors } from "@/hooks/useColors";
 
@@ -12,8 +14,12 @@ interface PrayerRowProps {
   englishName: string;
   adhan: string;
   iqama: string;
-  isCurrent: boolean;
-  isNext: boolean;
+  isHighlighted: boolean;
+  blinkAdhan: boolean;
+  blinkIqama: boolean;
+  scale?: number;
+  isDay?: boolean;
+  isRug?: boolean;
 }
 
 export function PrayerRow({
@@ -21,43 +27,84 @@ export function PrayerRow({
   englishName,
   adhan,
   iqama,
-  isCurrent,
-  isNext,
+  isHighlighted,
+  blinkAdhan,
+  blinkIqama,
+  scale = 1,
+  isDay = false,
+  isRug = false,
 }: PrayerRowProps) {
   const colors = useColors();
-  const bgOpacity = useSharedValue(isCurrent ? 1 : 0);
+  const bgOpacity = useSharedValue(isHighlighted ? 1 : 0);
+  const blinkOpacity = useSharedValue(1);
 
   useEffect(() => {
-    bgOpacity.value = withTiming(isCurrent ? 1 : 0, { duration: 600 });
-  }, [isCurrent, bgOpacity]);
+    bgOpacity.value = withTiming(isHighlighted ? 1 : 0, { duration: 600 });
+  }, [isHighlighted, bgOpacity]);
+
+  useEffect(() => {
+    if (blinkAdhan || blinkIqama) {
+      blinkOpacity.value = withRepeat(
+        withSequence(withTiming(0.3, { duration: 800 }), withTiming(1, { duration: 800 })),
+        -1,
+        true
+      );
+    } else {
+      blinkOpacity.value = 1;
+    }
+  }, [blinkAdhan, blinkIqama, blinkOpacity]);
 
   const bgAnim = useAnimatedStyle(() => ({
     opacity: bgOpacity.value,
   }));
 
+  const blinkAnim = useAnimatedStyle(() => ({
+    opacity: blinkOpacity.value,
+  }));
+
+  const dynamic = {
+    text: isRug ? "#FDFDFB" : (isDay ? "#0A1B3D" : colors.foreground),
+    subText: isRug ? "#D4AA50" : (isDay ? "#2C3E50" : colors.mutedForeground),
+    accent: isRug ? "#FDFDFB" : (isDay ? "#D4AA50" : colors.primary),
+    highlight: isRug ? "rgba(212, 170, 80, 0.15)" : (isDay ? "rgba(10, 27, 61, 0.08)" : "rgba(212, 170, 80, 0.07)"),
+  };
+
+  const shadow = isRug ? {
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  } : {};
+
   return (
     <View
       style={[
         styles.container,
-        isCurrent && { backgroundColor: "rgba(212, 170, 80, 0.07)" },
+        { 
+          paddingVertical: 10 * scale, 
+          paddingHorizontal: 16 * scale,
+          marginVertical: 2 * scale,
+          borderRadius: 8 * scale
+        },
+        isHighlighted && { backgroundColor: dynamic.highlight },
       ]}
     >
-      {isCurrent && (
+      {isHighlighted && (
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
             styles.highlightBorder,
-            { borderColor: colors.primary + "80" },
+            { backgroundColor: isRug ? "rgba(212, 170, 80, 0.05)" : "transparent", borderColor: "#D4AA50", borderRadius: 8 * scale, borderWidth: 1 * scale },
             bgAnim,
           ]}
         />
       )}
 
-      <View style={styles.namesBlock}>
+      <View style={[styles.namesBlock, { paddingRight: 8 * scale }]}>
         <Text
           style={[
             styles.arabicName,
-            { color: isCurrent ? colors.primary : colors.foreground },
+            { color: isHighlighted ? "#D4AA50" : dynamic.text, fontSize: 24 * scale, fontWeight: isRug ? "900" : "400" },
+            shadow
           ]}
         >
           {arabicName}
@@ -66,10 +113,15 @@ export function PrayerRow({
           style={[
             styles.englishName,
             {
-              color: isCurrent
-                ? colors.primary + "CC"
-                : colors.mutedForeground,
+              fontSize: 13 * scale,
+              marginTop: 1 * scale,
+              letterSpacing: 0.5 * scale,
+              fontWeight: isRug ? "800" : "400",
+              color: isHighlighted
+                ? "#D4AA50"
+                : dynamic.subText,
             },
+            shadow
           ]}
         >
           {englishName}
@@ -77,32 +129,33 @@ export function PrayerRow({
       </View>
 
       <View style={styles.timeBlock}>
-        <Text
+        <Animated.Text
           style={[
             styles.timeText,
-            { color: isCurrent ? colors.primary : colors.foreground },
+            { color: blinkAdhan ? "#D4AA50" : dynamic.text, fontSize: 22 * scale, fontWeight: isRug ? "800" : "600" },
+            shadow,
+            blinkAdhan ? blinkAnim : {},
           ]}
         >
           {adhan}
-        </Text>
+        </Animated.Text>
       </View>
 
       <View style={styles.timeBlock}>
-        <Text
+        <Animated.Text
           style={[
             styles.timeText,
             {
-              color: isNext
-                ? colors.accent
-                : isCurrent
-                ? colors.primary
-                : colors.foreground,
-              fontWeight: "700",
+              fontSize: 22 * scale,
+              color: blinkIqama ? "#D4AA50" : dynamic.text,
+              fontWeight: "900",
             },
+            shadow,
+            blinkIqama ? blinkAnim : {},
           ]}
         >
           {iqama}
-        </Text>
+        </Animated.Text>
       </View>
     </View>
   );
@@ -112,37 +165,27 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginVertical: 2,
   },
   highlightBorder: {
-    borderRadius: 8,
-    borderWidth: 1,
   },
   namesBlock: {
     flex: 2,
     alignItems: "flex-end",
-    paddingRight: 8,
   },
   arabicName: {
-    fontSize: 21,
     textAlign: "right",
   },
   englishName: {
-    fontSize: 11,
     textAlign: "right",
-    marginTop: 1,
-    letterSpacing: 0.5,
   },
   timeBlock: {
     flex: 1.5,
     alignItems: "center",
   },
   timeText: {
-    fontSize: 19,
-    fontWeight: "600",
     letterSpacing: 1,
   },
 });
+
+
+

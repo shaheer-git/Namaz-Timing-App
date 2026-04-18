@@ -1,0 +1,16 @@
+[build]
+  # Tell Netlify to run the web export command
+  command = "pnpm --filter @workspace/namaz-tv run build:web"
+  # Expo web export goes into the 'dist' folder
+  publish = "artifacts/namaz-tv/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # This tells Expo we are in a production/non-interactive environment
+  CI = "true"
+
+[[redirects]]
+  # Ensure React Router / Expo Router works on refresh
+  from = "/*"
+  to = "/index.html"
+  status = 200
