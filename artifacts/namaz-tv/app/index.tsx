@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
   Platform,
   useColorScheme,
@@ -29,10 +28,7 @@ import { IslamicMoon } from "@/components/IslamicMoon";
 import { DayBackground } from "@/components/DayBackground";
 import { AnimatedDigit } from "@/components/AnimatedDigit";
 import { useBeep } from "@/hooks/useBeep";
-
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-
-const SCALE = Math.max(1, SCREEN_H / 720);
+import { useDisplayMetrics } from "@/hooks/useDisplayScale";
 
 // Helper to convert "HH:mm" to minutes
 function timeToMinutes(timeStr: string, prayerKey?: string): number {
@@ -62,6 +58,7 @@ function timeToMinutes(timeStr: string, prayerKey?: string): number {
 }
 
 export default function TVDisplay() {
+  const { scale: SCALE, tvLikeLayout } = useDisplayMetrics();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -150,6 +147,10 @@ export default function TVDisplay() {
     textShadowRadius: 3,
   };
 
+  const edgePad = tvLikeLayout ? 30 : 14;
+  const mainGap = tvLikeLayout ? 30 : 12;
+  const tablePad = 16 * SCALE;
+
   return (
     <View style={styles.container}>
       {/* Night Sky */}
@@ -166,16 +167,52 @@ export default function TVDisplay() {
       <View
         style={[
           styles.inner,
-          { paddingTop: topPad + 12 * SCALE, paddingBottom: botPad + 12 * SCALE },
+          {
+            paddingTop: topPad + 12 * SCALE,
+            paddingBottom: botPad + 12 * SCALE,
+            paddingHorizontal: edgePad,
+          },
         ]}
       >
-        <View style={[styles.topBar, { marginBottom: 12 * SCALE }]}>
-          <Text style={[styles.mosqueName, { color: dynamicColors.mosqueColor, fontSize: 24 * SCALE }, shadow]}>
-            {settings.mosqueName}
-          </Text>
-          <Text style={[styles.mosqueNameArabic, { color: dynamicColors.accent, fontSize: 22 * SCALE }, shadow]}>
-            {settings.mosqueNameArabic}
-          </Text>
+        <View
+          style={[
+            styles.topBar,
+            { marginBottom: 12 * SCALE },
+            !tvLikeLayout && styles.topBarCompact,
+          ]}
+        >
+          <View
+            style={
+              tvLikeLayout
+                ? styles.topBarTitlesRow
+                : styles.topBarTitlesStack
+            }
+          >
+            <Text
+              numberOfLines={tvLikeLayout ? 1 : 2}
+              ellipsizeMode="tail"
+              style={[
+                styles.mosqueName,
+                tvLikeLayout && styles.mosqueNameTv,
+                { color: dynamicColors.mosqueColor, fontSize: 24 * SCALE },
+                shadow,
+              ]}
+            >
+              {settings.mosqueName}
+            </Text>
+            <Text
+              numberOfLines={tvLikeLayout ? 1 : 2}
+              ellipsizeMode="tail"
+              style={[
+                styles.mosqueNameArabic,
+                tvLikeLayout && styles.mosqueNameArabicTv,
+                { color: dynamicColors.accent, fontSize: 22 * SCALE },
+                shadow,
+              ]}
+            >
+              {settings.mosqueNameArabic}
+            </Text>
+          </View>
           <TouchableOpacity
             style={[styles.settingsBtn, { borderColor: dynamicColors.accent, padding: 8 * SCALE }]}
             onPress={() => router.push("/settings")}
@@ -184,8 +221,8 @@ export default function TVDisplay() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.mainRow}>
-          <View style={styles.leftCol}>
+        <View style={[styles.mainRow, { gap: mainGap }]}>
+          <View style={[styles.leftCol, !tvLikeLayout && styles.leftColCompact]}>
             <View style={styles.clockRow}>
               <AnimatedDigit
                 value={time.displayHours}
@@ -302,7 +339,12 @@ export default function TVDisplay() {
           />
 
           <View style={styles.rightCol}>
-            <View style={[styles.prayerHeader, { paddingVertical: 10 * SCALE }]}>
+            <View
+              style={[
+                styles.prayerHeader,
+                { paddingVertical: 10 * SCALE, paddingHorizontal: tablePad },
+              ]}
+            >
               <View style={styles.prayerNameHeader}>
                 <Text style={[styles.headerLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }, shadow]}>
                   Prayer
@@ -321,7 +363,15 @@ export default function TVDisplay() {
             </View>
 
             <View
-              style={[styles.headerUnderline, { backgroundColor: dynamicColors.accent, opacity: 0.2, marginBottom: 8 * SCALE }]}
+              style={[
+                styles.headerUnderline,
+                {
+                  backgroundColor: dynamicColors.accent,
+                  opacity: 0.2,
+                  marginBottom: 8 * SCALE,
+                  marginHorizontal: tablePad,
+                },
+              ]}
             />
 
             {PRAYER_ORDER.map((key) => {
@@ -351,7 +401,12 @@ export default function TVDisplay() {
           </View>
         </View>
 
-        <Text style={[styles.watermark, { color: dynamicColors.subText, fontSize: 12 * SCALE }]}>
+        <Text
+          style={[
+            styles.watermark,
+            { color: dynamicColors.subText, fontSize: 12 * SCALE, right: edgePad + 4 },
+          ]}
+        >
           by Shaheer
         </Text>
       </View>
@@ -366,21 +421,41 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    paddingHorizontal: 30,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
   },
+  topBarCompact: {
+    alignItems: "flex-start",
+  },
+  topBarTitlesRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 0,
+  },
+  topBarTitlesStack: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 10,
+    paddingRight: 4,
+  },
   mosqueName: {
     fontWeight: "900",
     letterSpacing: 2,
     textTransform: "uppercase",
+  },
+  mosqueNameTv: {
     flex: 1,
   },
   mosqueNameArabic: {
     fontWeight: "800",
+    marginTop: 2,
+  },
+  mosqueNameArabicTv: {
     marginRight: 16,
+    marginTop: 0,
   },
   settingsBtn: {
     borderRadius: 8,
@@ -389,12 +464,15 @@ const styles = StyleSheet.create({
   mainRow: {
     flex: 1,
     flexDirection: "row",
-    gap: 30,
   },
   leftCol: {
     flex: 1.1,
     justifyContent: "center",
     gap: 20,
+    minWidth: 0,
+  },
+  leftColCompact: {
+    flexShrink: 1,
   },
   clockRow: {
     flexDirection: "row",
@@ -481,10 +559,10 @@ const styles = StyleSheet.create({
   rightCol: {
     flex: 2.1,
     justifyContent: "center",
+    minWidth: 0,
   },
   prayerHeader: {
     flexDirection: "row",
-    paddingHorizontal: 20,
   },
   prayerNameHeader: {
     flex: 2,
@@ -501,7 +579,6 @@ const styles = StyleSheet.create({
   },
   headerUnderline: {
     height: 1.5,
-    marginHorizontal: 20,
   },
   watermark: {
     position: "absolute",
