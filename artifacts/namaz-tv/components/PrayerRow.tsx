@@ -22,6 +22,7 @@ interface PrayerRowProps {
   scale?: number;
   isDay?: boolean;
   isRug?: boolean;
+  tvLikeLayout: boolean;
 }
 
 export function PrayerRow({
@@ -37,6 +38,7 @@ export function PrayerRow({
   scale = 1,
   isDay = false,
   isRug = false,
+  tvLikeLayout,
 }: PrayerRowProps) {
   const colors = useColors();
   const bgOpacity = useSharedValue(isHighlighted ? 1 : 0);
@@ -87,6 +89,7 @@ export function PrayerRow({
         { 
           borderBottomWidth: 1 * scale,
           borderBottomColor: dynamic.border,
+          minHeight: tvLikeLayout ? 110 : 55,
         },
         isHighlighted && { backgroundColor: dynamic.highlight },
       ]}
@@ -106,7 +109,7 @@ export function PrayerRow({
       )}
 
       {/* Prayer Name Column */}
-      <View style={[styles.cell, styles.nameCell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+      <View style={[styles.cell, styles.nameCell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
         <Text style={[styles.arabicName, { color: dynamic.text, fontSize: 32 * scale }, shadow]}>
           {arabicName}
         </Text>
@@ -116,14 +119,14 @@ export function PrayerRow({
       </View>
 
       {/* Awal Waqth */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
         <Text style={[styles.timeText, { color: "#4ADE80", fontSize: 38 * scale }, shadow]}>
           {awalWaqth}
         </Text>
       </View>
 
       {/* Adhaan */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
         <Animated.Text
           style={[
             styles.timeText,
@@ -137,7 +140,7 @@ export function PrayerRow({
       </View>
 
       {/* Iqama */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
         <Animated.Text
           style={[
             styles.timeText,
@@ -156,7 +159,7 @@ export function PrayerRow({
       </View>
 
       {/* Aaqri Waqth */}
-      <View style={styles.cell}>
+      <View style={[styles.cell, { paddingVertical: tvLikeLayout ? 14 : 6 }]}>
         <Text style={[styles.timeText, { color: "#FB923C", fontSize: 38 * scale }, shadow]}>
           {aaqriWaqth}
         </Text>
@@ -169,13 +172,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "stretch",
-    minHeight: 110,
   },
   cell: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 14,
   },
   nameCell: {
     flex: 1.2,

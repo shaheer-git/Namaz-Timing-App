@@ -7,7 +7,7 @@ import {
   Platform,
   ImageBackground,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
@@ -57,7 +57,6 @@ export default function TVDisplay() {
   const { scale: SCALE, tvLikeLayout } = useDisplayMetrics();
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { settings } = usePrayer();
   const time = useCurrentTime();
   const nextPrayer = useNextPrayer(
@@ -160,13 +159,25 @@ export default function TVDisplay() {
                 {settings.mosqueNameArabic}
               </Text>
             </View>
-            <TouchableOpacity
-              style={[styles.settingsBtn, { borderColor: dynamicColors.accent, padding: 10 * SCALE, marginRight: 10 * SCALE }]}
-              onPress={() => router.push("/settings")}
-              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            >
-              <Feather name="settings" size={24 * SCALE} color={dynamicColors.accent} />
-            </TouchableOpacity>
+            {!tvLikeLayout ? (
+              <TouchableOpacity
+                style={[
+                  styles.settingsBtnMobile,
+                  { backgroundColor: dynamicColors.cardBg, borderColor: dynamicColors.accent }
+                ]}
+                onPress={() => router.push("/settings")}
+              >
+                <Feather name="settings" size={32} color={dynamicColors.accent} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.settingsBtn, { borderColor: dynamicColors.accent, padding: 10 * SCALE, marginRight: 10 * SCALE }]}
+                onPress={() => router.push("/settings")}
+                hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+              >
+                <Feather name="settings" size={24 * SCALE} color={dynamicColors.accent} />
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={[styles.mainRow, { gap: mainGap }]}>
@@ -286,6 +297,7 @@ export default function TVDisplay() {
                       blinkAdhan={isNext && nextPrayer.nextEvent === "adhan"}
                       blinkIqama={isNext && nextPrayer.nextEvent === "iqama"}
                       scale={SCALE}
+                      tvLikeLayout={tvLikeLayout}
                     />
                   );
                 })}
@@ -340,6 +352,7 @@ const styles = StyleSheet.create({
   clockRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   clockDigit: {
     fontWeight: "900",
@@ -350,7 +363,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   clockMeta: {
-    gap: 4,
+    gap: 2,
+    alignItems: "center",
   },
   clockSeconds: {
     fontWeight: "800",
@@ -443,7 +457,7 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -460,10 +474,28 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: "#fff",
   },
+  settingsBtnMobile: {
+    position: "absolute",
+    top: 10,
+    right: 20,
+    bottom: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
   watermark: {
     position: "absolute",
     bottom: 10,
-    right: 20,
+    left: 20,
     fontWeight: "700",
     fontStyle: "italic",
     opacity: 0.5,

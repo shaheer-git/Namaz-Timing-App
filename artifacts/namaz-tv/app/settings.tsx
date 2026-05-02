@@ -11,7 +11,7 @@ import {
   Switch,
   KeyboardAvoidingView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -220,7 +220,6 @@ function TextSettingRow({
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { settings, updateSettings } = usePrayer();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
