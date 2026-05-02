@@ -72,9 +72,12 @@ export default function TVDisplay() {
     if (time.seconds === 0) {
       const currentMins = time.hours * 60 + time.minutes;
       for (const key of PRAYER_ORDER) {
+        const pt = settings.prayerTimes[key];
         if (
-          timeToMinutes(settings.prayerTimes[key].adhan, key) === currentMins ||
-          timeToMinutes(settings.prayerTimes[key].iqama, key) === currentMins
+          timeToMinutes(pt.awalWaqth, key) === currentMins ||
+          timeToMinutes(pt.adhan, key) === currentMins ||
+          timeToMinutes(pt.aaqriWaqth, key) === currentMins ||
+          timeToMinutes(pt.iqama, key) === currentMins
         ) {
           playBeep();
           break;
@@ -257,12 +260,12 @@ export default function TVDisplay() {
                     <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: dynamicColors.subText }]}>الأذان</Text>
                   </View>
                   <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: "rgba(212, 170, 80, 0.2)" }]}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#FB923C" }]}>AAQRI WAQTH</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#FB923C" }]}>أقري وقت</Text>
-                  </View>
-                  <View style={styles.headerCell}>
                     <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#60A5FA" }]}>IQAMA</Text>
                     <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#60A5FA" }]}>الإقامة</Text>
+                  </View>
+                  <View style={styles.headerCell}>
+                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#FB923C" }]}>AAQRI WAQTH</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#FB923C" }]}>أقري وقت</Text>
                   </View>
                 </View>
 

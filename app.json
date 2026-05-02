@@ -6,7 +6,18 @@
       }
     },
     "android": {
-      "package": "com.shaheer1859.workspace"
+      "package": "com.shaheer1859.workspace",
+      "intentFilters": [
+        {
+          "action": "MAIN",
+          "category": [
+            "LEANBACK_LAUNCHER",
+            "LAUNCHER",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "softwareKeyboardLayoutMode": "pan"
     }
   }
 }

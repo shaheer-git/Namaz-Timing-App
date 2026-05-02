@@ -136,15 +136,8 @@ export function PrayerRow({
         </Animated.Text>
       </View>
 
-      {/* Aaqri Waqth */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
-        <Text style={[styles.timeText, { color: "#FB923C", fontSize: 38 * scale }, shadow]}>
-          {aaqriWaqth}
-        </Text>
-      </View>
-
       {/* Iqama */}
-      <View style={styles.cell}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
         <Animated.Text
           style={[
             styles.timeText,
@@ -160,6 +153,13 @@ export function PrayerRow({
         >
           {iqama}
         </Animated.Text>
+      </View>
+
+      {/* Aaqri Waqth */}
+      <View style={styles.cell}>
+        <Text style={[styles.timeText, { color: "#FB923C", fontSize: 38 * scale }, shadow]}>
+          {aaqriWaqth}
+        </Text>
       </View>
     </View>
   );
