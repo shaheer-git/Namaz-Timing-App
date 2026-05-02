@@ -12,7 +12,9 @@ import { useColors } from "@/hooks/useColors";
 interface PrayerRowProps {
   arabicName: string;
   englishName: string;
+  awalWaqth: string;
   adhan: string;
+  aaqriWaqth: string;
   iqama: string;
   isHighlighted: boolean;
   blinkAdhan: boolean;
@@ -25,7 +27,9 @@ interface PrayerRowProps {
 export function PrayerRow({
   arabicName,
   englishName,
+  awalWaqth,
   adhan,
+  aaqriWaqth,
   iqama,
   isHighlighted,
   blinkAdhan,
@@ -63,27 +67,26 @@ export function PrayerRow({
   }));
 
   const dynamic = {
-    text: isRug ? "#FDFDFB" : (isDay ? "#0A1B3D" : colors.foreground),
-    subText: isRug ? "#D4AA50" : (isDay ? "#2C3E50" : colors.mutedForeground),
-    accent: isRug ? "#FDFDFB" : (isDay ? "#D4AA50" : colors.primary),
-    highlight: isRug ? "rgba(212, 170, 80, 0.15)" : (isDay ? "rgba(10, 27, 61, 0.08)" : "rgba(212, 170, 80, 0.07)"),
+    text: "#FFFFFF",
+    subText: "#D4AA50",
+    accent: "#E6C27A",
+    highlight: "rgba(212, 170, 80, 0.1)",
+    border: "rgba(212, 170, 80, 0.15)",
   };
 
-  const shadow = isRug ? {
+  const shadow = {
     textShadowColor: "rgba(0, 0, 0, 0.6)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  } : {};
+  };
 
   return (
     <View
       style={[
         styles.container,
         { 
-          paddingVertical: 10 * scale, 
-          paddingHorizontal: 16 * scale,
-          marginVertical: 2 * scale,
-          borderRadius: 8 * scale
+          borderBottomWidth: 1 * scale,
+          borderBottomColor: dynamic.border,
         },
         isHighlighted && { backgroundColor: dynamic.highlight },
       ]}
@@ -92,47 +95,39 @@ export function PrayerRow({
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
-            styles.highlightBorder,
-            { backgroundColor: isRug ? "rgba(212, 170, 80, 0.05)" : "transparent", borderColor: "#D4AA50", borderRadius: 8 * scale, borderWidth: 1 * scale },
+            { 
+              borderColor: "#D4AA50", 
+              borderWidth: 1.5 * scale,
+              zIndex: 10
+            },
             bgAnim,
           ]}
         />
       )}
 
-      <View style={[styles.namesBlock, { paddingRight: 8 * scale }]}>
-        <Text
-          style={[
-            styles.arabicName,
-            { color: isHighlighted ? "#D4AA50" : dynamic.text, fontSize: 24 * scale, fontWeight: isRug ? "900" : "400" },
-            shadow
-          ]}
-        >
+      {/* Prayer Name Column */}
+      <View style={[styles.cell, styles.nameCell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+        <Text style={[styles.arabicName, { color: dynamic.text, fontSize: 32 * scale }, shadow]}>
           {arabicName}
         </Text>
-        <Text
-          style={[
-            styles.englishName,
-            {
-              fontSize: 13 * scale,
-              marginTop: 1 * scale,
-              letterSpacing: 0.5 * scale,
-              fontWeight: isRug ? "800" : "400",
-              color: isHighlighted
-                ? "#D4AA50"
-                : dynamic.subText,
-            },
-            shadow
-          ]}
-        >
+        <Text style={[styles.englishName, { fontSize: 16 * scale, color: dynamic.subText }, shadow]}>
           {englishName}
         </Text>
       </View>
 
-      <View style={styles.timeBlock}>
+      {/* Awal Waqth */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+        <Text style={[styles.timeText, { color: "#4ADE80", fontSize: 38 * scale }, shadow]}>
+          {awalWaqth}
+        </Text>
+      </View>
+
+      {/* Adhaan */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
         <Animated.Text
           style={[
             styles.timeText,
-            { color: blinkAdhan ? "#D4AA50" : dynamic.text, fontSize: 22 * scale, fontWeight: isRug ? "800" : "600" },
+            { color: dynamic.subText, fontSize: 38 * scale, letterSpacing: 1.5 * scale },
             shadow,
             blinkAdhan ? blinkAnim : {},
           ]}
@@ -141,14 +136,23 @@ export function PrayerRow({
         </Animated.Text>
       </View>
 
-      <View style={styles.timeBlock}>
+      {/* Aaqri Waqth */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border }]}>
+        <Text style={[styles.timeText, { color: "#FB923C", fontSize: 38 * scale }, shadow]}>
+          {aaqriWaqth}
+        </Text>
+      </View>
+
+      {/* Iqama */}
+      <View style={styles.cell}>
         <Animated.Text
           style={[
             styles.timeText,
             {
-              fontSize: 22 * scale,
-              color: blinkIqama ? "#D4AA50" : dynamic.text,
+              fontSize: 38 * scale,
+              color: "#60A5FA",
               fontWeight: "900",
+              letterSpacing: 1.5 * scale
             },
             shadow,
             blinkIqama ? blinkAnim : {},
@@ -164,26 +168,31 @@ export function PrayerRow({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    alignItems: "stretch",
+    minHeight: 110,
+  },
+  cell: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 14,
   },
-  highlightBorder: {
-  },
-  namesBlock: {
-    flex: 2,
-    alignItems: "flex-end",
+  nameCell: {
+    flex: 1.2,
   },
   arabicName: {
-    textAlign: "right",
+    fontWeight: "800",
+    textAlign: "center",
   },
   englishName: {
-    textAlign: "right",
-  },
-  timeBlock: {
-    flex: 1.5,
-    alignItems: "center",
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 2,
+    textTransform: "uppercase",
   },
   timeText: {
-    letterSpacing: 1,
+    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
   },
 });
 

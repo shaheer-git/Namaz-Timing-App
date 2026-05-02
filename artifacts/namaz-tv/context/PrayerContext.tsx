@@ -3,7 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export interface PrayerTime {
+  awalWaqth: string;
   adhan: string;
+  aaqriWaqth: string;
   iqama: string;
 }
 
@@ -22,21 +24,23 @@ export interface PrayerSettings {
   showSunrise: boolean;
   sunriseTime: string;
   jumuahTime: string;
+  autoStart: boolean;
 }
 
 const defaultSettings: PrayerSettings = {
   mosqueName: "Jamiya Masjid Sakleshpur",
-  mosqueNameArabic: "جامع المسجد شكليشبور",
+  mosqueNameArabic: "جامع مسجد ساكلشبور",
   prayerTimes: {
-    fajr: { adhan: "05:15", iqama: "05:40" },
-    dhuhr: { adhan: "13:00", iqama: "13:30" },
-    asr: { adhan: "17:00", iqama: "17:15" },
-    maghrib: { adhan: "18:40", iqama: "18:44" },
-    isha: { adhan: "20:00", iqama: "20:15" },
+    fajr: { awalWaqth: "04:45", adhan: "05:05", aaqriWaqth: "05:35", iqama: "05:45" },
+    dhuhr: { awalWaqth: "12:30", adhan: "13:00", aaqriWaqth: "13:30", iqama: "13:40" },
+    asr: { awalWaqth: "16:10", adhan: "17:00", aaqriWaqth: "17:15", iqama: "17:25" },
+    maghrib: { awalWaqth: "18:30", adhan: "18:43", aaqriWaqth: "18:47", iqama: "18:50" },
+    isha: { awalWaqth: "19:00", adhan: "20:00", aaqriWaqth: "20:15", iqama: "20:30" },
   },
   showSunrise: true,
   sunriseTime: "06:18",
   jumuahTime: "13:45",
+  autoStart: true,
 };
 
 interface PrayerContextType {
@@ -44,7 +48,7 @@ interface PrayerContextType {
   updateSettings: (settings: PrayerSettings) => Promise<void>;
   updatePrayerTime: (
     prayer: keyof PrayerTimes,
-    type: "adhan" | "iqama",
+    type: keyof PrayerTime,
     time: string
   ) => Promise<void>;
   isLoading: boolean;
@@ -160,7 +164,7 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
 
   async function updatePrayerTime(
     prayer: keyof PrayerTimes,
-    type: "adhan" | "iqama",
+    type: keyof PrayerTime,
     time: string
   ) {
     const newSettings = {

@@ -107,7 +107,9 @@ export function useCurrentTime(): TimeInfo {
   const isAM = hours < 12;
   const hours12 = hours % 12 === 0 ? 12 : hours % 12;
 
-  const hijri = toHijri(now);
+  const hijriDate = new Date(now);
+  hijriDate.setDate(hijriDate.getDate() - 3);
+  const hijri = toHijri(hijriDate);
 
   return {
     hours,

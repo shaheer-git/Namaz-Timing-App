@@ -105,7 +105,7 @@ function TimeInput({
           <Text style={[styles.timeDisplayText, { color: color }]}>
             {value}
           </Text>
-          <Feather name="edit-2" size={13} color={colors.mutedForeground} />
+          <Feather name="edit-2" size={18} color={colors.mutedForeground} />
         </TouchableOpacity>
       )}
     </View>
@@ -137,18 +137,35 @@ function PrayerCard({
         </Text>
       </View>
       <View style={styles.prayerCardTimes}>
-        <TimeInput
-          label="Adhan"
-          value={pt.adhan}
-          color={colors.foreground}
-          onSave={(v) => updatePrayerTime(prayerKey, "adhan", v)}
-        />
-        <TimeInput
-          label="Iqama"
-          value={pt.iqama}
-          color={colors.accent}
-          onSave={(v) => updatePrayerTime(prayerKey, "iqama", v)}
-        />
+        <View style={styles.prayerCardRow}>
+          <TimeInput
+            label="Awal"
+            value={pt.awalWaqth}
+            color="#4ADE80"
+            onSave={(v) => updatePrayerTime(prayerKey, "awalWaqth", v)}
+          />
+          <TimeInput
+            label="Adhaan"
+            value={pt.adhan}
+            color={colors.foreground}
+            onSave={(v) => updatePrayerTime(prayerKey, "adhan", v)}
+          />
+        </View>
+        <View style={[styles.rowDivider, { backgroundColor: colors.border, marginVertical: 8 }]} />
+        <View style={styles.prayerCardRow}>
+          <TimeInput
+            label="Aaqri"
+            value={pt.aaqriWaqth}
+            color="#FB923C"
+            onSave={(v) => updatePrayerTime(prayerKey, "aaqriWaqth", v)}
+          />
+          <TimeInput
+            label="Iqama"
+            value={pt.iqama}
+            color="#60A5FA"
+            onSave={(v) => updatePrayerTime(prayerKey, "iqama", v)}
+          />
+        </View>
       </View>
     </View>
   );
@@ -230,9 +247,9 @@ export default function SettingsScreen() {
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
-          <Feather name="arrow-left" size={22} color={colors.foreground} />
+          <Feather name="arrow-left" size={28} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>
           Settings
@@ -328,11 +345,39 @@ export default function SettingsScreen() {
         <View
           style={[styles.infoCard, { backgroundColor: colors.accent + "15", borderColor: colors.accent + "40" }]}
         >
-          <Feather name="info" size={16} color={colors.accent} />
+          <Feather name="info" size={20} color={colors.accent} />
           <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
             Changes are saved automatically. This settings screen can be accessed from any phone or tablet by visiting your app link.
           </Text>
         </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          System
+        </Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.switchRow}>
+            <View>
+              <Text style={[styles.switchLabel, { color: colors.foreground }]}>
+                Auto-Start on Boot
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
+                Open app automatically when TV starts
+              </Text>
+            </View>
+            <Switch
+              value={settings.autoStart}
+              onValueChange={(v) => saveSetting("autoStart", v)}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -430,6 +475,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   prayerCardTimes: {
+    gap: 0,
+  },
+  prayerCardRow: {
     flexDirection: "row",
     gap: 12,
   },

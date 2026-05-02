@@ -23,11 +23,11 @@ export function useDisplayMetrics(): DisplayMetrics {
 
     const tvLikeLayout = shortSide >= 600 && longSide >= 1100;
 
-    const heightScale = screenH / 720;
+    const heightScale = screenH / 900;
 
     let scale: number;
     if (tvLikeLayout) {
-      scale = Math.max(1, heightScale);
+      scale = Math.max(0.8, heightScale);
     } else {
       const innerPad = 60;
       const mainW = Math.max(200, screenW - innerPad);
