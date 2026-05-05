@@ -21,7 +21,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#050A14"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/images/icon.png"
@@ -46,8 +50,9 @@
         "origin": "https://replit.com/"
       },
       "eas": {
-        "projectId": "fdc790cc-9f45-43ce-a045-7900a6b40107"
+        "projectId": "eed1e9ba-85bb-4a08-98c0-76d2024a2813"
       }
-    }
+    },
+    "owner": "shaheer1859"
   }
 }

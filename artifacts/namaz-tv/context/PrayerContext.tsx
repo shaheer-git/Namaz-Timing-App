@@ -25,6 +25,8 @@ export interface PrayerSettings {
   sunriseTime: string;
   jumuahTime: string;
   autoStart: boolean;
+  useYearlyData: boolean;
+  yearlyData?: any[]; // The full 365 days of data
 }
 
 const defaultSettings: PrayerSettings = {
@@ -41,6 +43,7 @@ const defaultSettings: PrayerSettings = {
   sunriseTime: "06:18",
   jumuahTime: "13:45",
   autoStart: true,
+  useYearlyData: true,
 };
 
 interface PrayerContextType {
@@ -129,9 +132,18 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
 
     if (data && data.data) {
       const cloudSettings = data.data as PrayerSettings;
-      setSettings(cloudSettings);
+      
+      // Update based on yearly data if enabled
+      if (cloudSettings.useYearlyData && cloudSettings.yearlyData) {
+        const today = new Date();
+        const updatedSettings = applyYearlyDataToSettings(cloudSettings, today);
+        setSettings(updatedSettings);
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
+      } else {
+        setSettings(cloudSettings);
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cloudSettings));
+      }
       setIsSynced(true);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cloudSettings));
     } else if (error && error.code === "PGRST116") {
       // Not found, create it with defaults
       console.log("Mosque settings not found, creating default...");
@@ -139,6 +151,55 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
       setIsSynced(true);
     }
   }
+
+  function applyYearlyDataToSettings(settings: PrayerSettings, date: Date): PrayerSettings {
+    if (!settings.yearlyData || settings.yearlyData.length === 0) return settings;
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    // Match based on month and day (lifetime logic)
+    const dayData = settings.yearlyData.find(item => {
+      const d = new Date(item.Date);
+      return (d.getMonth() + 1) === month && d.getDate() === day;
+    });
+
+    if (!dayData) return settings;
+
+    return {
+      ...settings,
+      prayerTimes: {
+        ...settings.prayerTimes,
+        fajr: { ...settings.prayerTimes.fajr, awalWaqth: dayData.Fajr_Awal, aaqriWaqth: dayData.Fajr_Aaqir },
+        dhuhr: { ...settings.prayerTimes.dhuhr, awalWaqth: dayData.Zohr_Awal, aaqriWaqth: dayData.Zohr_Aaqir },
+        asr: { ...settings.prayerTimes.asr, awalWaqth: dayData.Asr_Awal, aaqriWaqth: dayData.Asr_Aaqir },
+        maghrib: { ...settings.prayerTimes.maghrib, awalWaqth: dayData.Maghrib_Awal, aaqriWaqth: dayData.Maghrib_Aaqir },
+        isha: { ...settings.prayerTimes.isha, awalWaqth: dayData.Isha_Awal, aaqriWaqth: dayData.Isha_Aaqir },
+      }
+    };
+  }
+
+  // Effect to update prayer times every day at midnight or on load
+  useEffect(() => {
+    function refreshDailyTimes() {
+      if (settings.useYearlyData && settings.yearlyData) {
+        const today = new Date();
+        const updated = applyYearlyDataToSettings(settings, today);
+        if (JSON.stringify(updated.prayerTimes) !== JSON.stringify(settings.prayerTimes)) {
+          setSettings(updated);
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        }
+      }
+    }
+
+    refreshDailyTimes();
+
+    // Check every minute if the day has changed
+    const interval = setInterval(() => {
+      refreshDailyTimes();
+    }, 60000); 
+
+    return () => clearInterval(interval);
+  }, [settings.useYearlyData, settings.yearlyData, settings.prayerTimes]);
 
   async function updateSettings(newSettings: PrayerSettings) {
     // Optimistic UI update
@@ -167,8 +228,34 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
     type: keyof PrayerTime,
     time: string
   ) {
-    const newSettings = {
+    let newYearlyData = settings.yearlyData;
+
+    // If we are editing Awal or Aaqir and have yearly data, update the master schedule
+    if (settings.useYearlyData && settings.yearlyData && (type === "awalWaqth" || type === "aaqriWaqth")) {
+      const today = new Date();
+      const month = today.getMonth() + 1;
+      const day = today.getDate();
+      
+      newYearlyData = settings.yearlyData.map(item => {
+        const d = new Date(item.Date);
+        if ((d.getMonth() + 1) === month && d.getDate() === day) {
+          // Map the internal field name to the JSON field name
+          const jsonField = type === "awalWaqth" ? 
+            `${prayer.charAt(0).toUpperCase() + prayer.slice(1)}_Awal` : 
+            `${prayer.charAt(0).toUpperCase() + prayer.slice(1)}_Aaqir`;
+          
+          // Special case for Zohr (Zohr_Awal in JSON but dhuhr in code)
+          const finalField = prayer === "dhuhr" ? jsonField.replace("Dhuhr", "Zohr") : jsonField;
+          
+          return { ...item, [finalField]: time };
+        }
+        return item;
+      });
+    }
+
+    const newSettings: PrayerSettings = {
       ...settings,
+      yearlyData: newYearlyData,
       prayerTimes: {
         ...settings.prayerTimes,
         [prayer]: {

@@ -116,16 +116,28 @@ export default function TVDisplay() {
 
   const dynamicColors = {
     text: "#FFFFFF",
-    subText: "#D4AA50",
-    accent: "#E6C27A",
-    cardBg: "rgba(10, 30, 60, 0.6)",
+    subText: "#FDE047", // Azaan Yellow
+    accent: "#D4AA50", // Royal Gold
     mosqueColor: "#FFFFFF",
+    bg: "rgba(10, 5, 0, 0.45)", // Warmer, deep background
+    cardBg: "rgba(212, 170, 80, 0.08)", // Gold-tinted glass
+    border: "rgba(212, 170, 80, 0.5)",
+    highlight: "rgba(212, 170, 80, 0.25)",
+    awal: "#52FF88", // More Vibrant Green
+    jamath: "#F0EAD6", // Sophisticated Cream/Gold (Removed blue)
+    aaqri: "#FF8C00", // More Vibrant Orange
   };
 
   const shadow = {
-    textShadowColor: "rgba(0, 0, 0, 0.8)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 4,
+    textShadowColor: "rgba(212, 170, 80, 0.3)", // Vibrant Gold tint instead of black
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  };
+
+  const glowShadow = {
+    textShadowColor: "rgba(212, 170, 80, 0.8)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   };
 
   const edgePad = tvLikeLayout ? 45 : 18;
@@ -138,19 +150,20 @@ export default function TVDisplay() {
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
       >
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0, 5, 15, 0.7)" }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0, 5, 15, 0.15)" }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(212, 170, 80, 0.08)" }]} />
 
         <View
           style={[
             styles.inner,
             {
-              paddingTop: Math.max(10, topPad - 60 * SCALE),
-              paddingBottom: botPad + 10 * SCALE,
-              paddingHorizontal: edgePad * 0.6,
-            },
+            paddingTop: Math.max(10, topPad - 80 * SCALE),
+            paddingBottom: botPad + 5 * SCALE,
+            paddingHorizontal: edgePad * 0.5,
+          },
           ]}
         >
-          <View style={[styles.topBar, { marginBottom: 25 * SCALE }]}>
+          <View style={[styles.topBar, { marginBottom: 30 * SCALE }]}>
             <View style={styles.topBarTitlesStack}>
               <Text style={[styles.mosqueName, { color: dynamicColors.mosqueColor, fontSize: 28 * SCALE }, shadow]}>
                 {settings.mosqueName}
@@ -186,17 +199,17 @@ export default function TVDisplay() {
               <View style={styles.clockRow}>
                 <AnimatedDigit
                   value={time.displayHours}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, shadow]}
+                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, glowShadow]}
                   animateOnChange={true}
                 />
                 <Animated.Text
-                  style={[styles.clockColon, { color: dynamicColors.accent, fontSize: 110 * SCALE }, colonStyle, shadow]}
+                  style={[styles.clockColon, { color: dynamicColors.accent, fontSize: 110 * SCALE }, colonStyle, glowShadow]}
                 >
                   :
                 </Animated.Text>
                 <AnimatedDigit
                   value={time.displayMinutes}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, shadow]}
+                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, glowShadow]}
                   animateOnChange={true}
                 />
                 <View style={[styles.clockMeta, { marginLeft: 8 * SCALE }]}>
@@ -258,25 +271,25 @@ export default function TVDisplay() {
               <View style={[styles.tableContainer, { borderColor: "rgba(212, 170, 80, 0.3)" }]}>
                 {/* Header Row */}
                 <View style={[styles.tableHeader, { borderBottomWidth: 1.5 * SCALE, borderBottomColor: "rgba(212, 170, 80, 0.4)" }]}>
-                  <View style={[styles.headerCell, styles.headerNameCell, { borderRightWidth: 1 * SCALE, borderRightColor: "rgba(212, 170, 80, 0.2)" }]}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE }]}>PRAYER</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE }]}>الصلاة</Text>
+                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: dynamicColors.border }]}>
+                    <Text style={[styles.hLabel, { fontSize: 22 * SCALE, color: dynamicColors.aaqri }]}>AAQIR WAQTH</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 32 * SCALE, color: dynamicColors.aaqri }]}>أقري وقت</Text>
                   </View>
-                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: "rgba(212, 170, 80, 0.2)" }]}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#4ADE80" }]}>AWAL WAQTH</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#4ADE80" }]}>أول وقت</Text>
+                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: dynamicColors.border }]}>
+                    <Text style={[styles.hLabel, { fontSize: 22 * SCALE, color: dynamicColors.awal }]}>AWAL WAQTH</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 32 * SCALE, color: dynamicColors.awal }]}>أول وقت</Text>
                   </View>
-                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: "rgba(212, 170, 80, 0.2)" }]}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: dynamicColors.subText }]}>ADHAAN</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: dynamicColors.subText }]}>الأذان</Text>
+                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: dynamicColors.border }]}>
+                    <Text style={[styles.hLabel, { fontSize: 22 * SCALE, color: dynamicColors.jamath }]}>JAMATH</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 32 * SCALE, color: dynamicColors.jamath }]}>الجماعة</Text>
                   </View>
-                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: "rgba(212, 170, 80, 0.2)" }]}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#60A5FA" }]}>IQAMA</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#60A5FA" }]}>الإقامة</Text>
+                  <View style={[styles.headerCell, { borderRightWidth: 1 * SCALE, borderRightColor: dynamicColors.border }]}>
+                    <Text style={[styles.hLabel, { fontSize: 22 * SCALE, color: dynamicColors.subText }]}>AZAAN</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 32 * SCALE, color: dynamicColors.subText }]}>الأذان</Text>
                   </View>
-                  <View style={styles.headerCell}>
-                    <Text style={[styles.hLabel, { fontSize: 16 * SCALE, color: "#FB923C" }]}>AAQRI WAQTH</Text>
-                    <Text style={[styles.hLabelArabic, { fontSize: 24 * SCALE, color: "#FB923C" }]}>أقري وقت</Text>
+                  <View style={[styles.headerCell, styles.headerNameCell]}>
+                    <Text style={[styles.hLabel, { fontSize: 22 * SCALE }]}>PRAYER</Text>
+                    <Text style={[styles.hLabelArabic, { fontSize: 32 * SCALE }]}>الصلاة</Text>
                   </View>
                 </View>
 
@@ -428,6 +441,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     padding: 20,
     gap: 6,
+    marginBottom: 10,
     alignItems: "center",
   },
   nextLabel: {
@@ -441,7 +455,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   rightCol: {
-    flex: 2.9,
+    flex: 3.5,
     justifyContent: "center",
     paddingLeft: 10,
   },
@@ -449,7 +463,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1.5,
     overflow: "hidden",
-    backgroundColor: "rgba(10, 25, 50, 0.5)",
+    backgroundColor: "rgba(20, 10, 5, 0.5)",
   },
   tableHeader: {
     flexDirection: "row",
@@ -457,7 +471,7 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 25,
     alignItems: "center",
     justifyContent: "center",
   },

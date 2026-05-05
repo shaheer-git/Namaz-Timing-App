@@ -221,11 +221,27 @@ export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = usePrayer();
+  const [importModalVisible, setImportModalVisible] = useState(false);
+  const [importJson, setImportJson] = useState("");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   async function saveSetting(key: keyof PrayerSettings, value: unknown) {
     await updateSettings({ ...settings, [key]: value });
+  }
+
+  async function handleImportSubmit() {
+    try {
+      const parsed = JSON.parse(importJson);
+      if (!Array.isArray(parsed)) throw new Error("Data must be an array");
+
+      await saveSetting("yearlyData", parsed);
+      setImportModalVisible(false);
+      setImportJson("");
+      Alert.alert("Success", "Lifetime schedule imported successfully.");
+    } catch (e) {
+      Alert.alert("Error", "Invalid JSON format. Please check your data.");
+    }
   }
 
   return (
@@ -359,23 +375,96 @@ export default function SettingsScreen() {
             { backgroundColor: colors.card, borderColor: colors.border },
           ]}
         >
+        </View>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          Lifetime Schedule
+        </Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
           <View style={styles.switchRow}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={[styles.switchLabel, { color: colors.foreground }]}>
-                Auto-Start on Boot
+                Enable Lifetime Schedule
               </Text>
               <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
-                Open app automatically when TV starts
+                Automatically change times every day based on the calendar.
               </Text>
             </View>
             <Switch
-              value={settings.autoStart}
-              onValueChange={(v) => saveSetting("autoStart", v)}
+              value={settings.useYearlyData}
+              onValueChange={(v) => saveSetting("useYearlyData", v)}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#fff"
             />
           </View>
+
+          <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
+
+          <TouchableOpacity
+            style={[styles.importBtn, { backgroundColor: colors.primary + "10" }]}
+            onPress={() => {
+              // We'll show an alert first
+              Alert.alert(
+                "Import Data",
+                "Please paste the Lifetime JSON data here. This will update the mosque's yearly schedule for all TVs.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Import",
+                    onPress: () => {
+                      // In a real app, we'd use a clipboard or file picker
+                      // For now, I'll add a state for an import modal or similar
+                      setImportModalVisible(true);
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Feather name="download" size={18} color={colors.primary} />
+            <Text style={[styles.importBtnText, { color: colors.primary }]}>
+              {settings.yearlyData ? "Update Yearly Data" : "Import Yearly Data"}
+            </Text>
+          </TouchableOpacity>
+
+          {settings.yearlyData && (
+            <View style={styles.statusRow}>
+              <Feather name="check-circle" size={14} color="#4ADE80" />
+              <Text style={{ fontSize: 12, color: "#4ADE80", marginLeft: 4 }}>
+                {settings.yearlyData.length} days of data loaded
+              </Text>
+            </View>
+          )}
         </View>
+
+        {importModalVisible && (
+          <View style={[styles.importContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>Paste Lifetime JSON</Text>
+            <TextInput
+              multiline
+              style={[styles.importInput, { color: colors.foreground, borderColor: colors.border }]}
+              placeholder='[ { "Date": "2024-01-01", ... }, ... ]'
+              placeholderTextColor={colors.mutedForeground}
+              onChangeText={setImportJson}
+              value={importJson}
+            />
+            <View style={styles.importActions}>
+              <TouchableOpacity onPress={() => setImportModalVisible(false)} style={styles.actionBtn}>
+                <Text style={{ color: colors.mutedForeground }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleImportSubmit}
+                style={[styles.actionBtn, { backgroundColor: colors.primary, borderRadius: 6 }]}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Save Schedule</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
       </ScrollView>
     </KeyboardAvoidingView>
@@ -537,5 +626,46 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
+  },
+  importBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 14,
+    gap: 8,
+  },
+  importBtnText: {
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 12,
+  },
+  importContainer: {
+    marginTop: 10,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 12,
+  },
+  importInput: {
+    height: 150,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 12,
+    textAlignVertical: "top",
+  },
+  importActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  actionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
 });

@@ -89,7 +89,7 @@ export function PrayerRow({
         { 
           borderBottomWidth: 1 * scale,
           borderBottomColor: dynamic.border,
-          minHeight: tvLikeLayout ? 110 : 55,
+          minHeight: tvLikeLayout ? 200 : 55,
         },
         isHighlighted && { backgroundColor: dynamic.highlight },
       ]}
@@ -108,45 +108,28 @@ export function PrayerRow({
         />
       )}
 
-      {/* Prayer Name Column */}
-      <View style={[styles.cell, styles.nameCell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
-        <Text style={[styles.arabicName, { color: dynamic.text, fontSize: 32 * scale }, shadow]}>
-          {arabicName}
-        </Text>
-        <Text style={[styles.englishName, { fontSize: 16 * scale, color: dynamic.subText }, shadow]}>
-          {englishName}
+      {/* Aaqri Waqth */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+        <Text style={[styles.timeText, { color: "#FF8C00", fontSize: 48 * scale }, shadow]}>
+          {aaqriWaqth}
         </Text>
       </View>
 
       {/* Awal Waqth */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
-        <Text style={[styles.timeText, { color: "#4ADE80", fontSize: 38 * scale }, shadow]}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+        <Text style={[styles.timeText, { color: "#52FF88", fontSize: 48 * scale }, shadow]}>
           {awalWaqth}
         </Text>
       </View>
 
-      {/* Adhaan */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
-        <Animated.Text
-          style={[
-            styles.timeText,
-            { color: dynamic.subText, fontSize: 38 * scale, letterSpacing: 1.5 * scale },
-            shadow,
-            blinkAdhan ? blinkAnim : {},
-          ]}
-        >
-          {adhan}
-        </Animated.Text>
-      </View>
-
-      {/* Iqama */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 14 : 6 }]}>
+      {/* Jamath */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 30 : 6 }]}>
         <Animated.Text
           style={[
             styles.timeText,
             {
-              fontSize: 38 * scale,
-              color: "#60A5FA",
+              fontSize: 48 * scale,
+              color: "#F0EAD6",
               fontWeight: "900",
               letterSpacing: 1.5 * scale
             },
@@ -158,10 +141,27 @@ export function PrayerRow({
         </Animated.Text>
       </View>
 
-      {/* Aaqri Waqth */}
-      <View style={[styles.cell, { paddingVertical: tvLikeLayout ? 14 : 6 }]}>
-        <Text style={[styles.timeText, { color: "#FB923C", fontSize: 38 * scale }, shadow]}>
-          {aaqriWaqth}
+      {/* Azaan */}
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+        <Animated.Text
+          style={[
+            styles.timeText,
+            { color: "#FDE047", fontSize: 48 * scale, letterSpacing: 1.5 * scale },
+            shadow,
+            blinkAdhan ? blinkAnim : {},
+          ]}
+        >
+          {adhan}
+        </Animated.Text>
+      </View>
+
+      {/* Prayer Name Column */}
+      <View style={[styles.cell, styles.nameCell, { paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+        <Text style={[styles.arabicName, { color: "#FFFFFF", fontSize: 48 * scale }, shadow]}>
+          {arabicName}
+        </Text>
+        <Text style={[styles.englishName, { fontSize: 26 * scale, color: "rgba(255, 255, 255, 0.7)" }, shadow]}>
+          {englishName}
         </Text>
       </View>
     </View>
