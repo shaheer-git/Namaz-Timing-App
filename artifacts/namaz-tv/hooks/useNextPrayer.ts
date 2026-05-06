@@ -22,7 +22,7 @@ const PRAYER_ARABIC = {
 };
 const PRAYER_DISPLAY = {
   fajr: "Fajr",
-  dhuhr: "Dhuhr",
+  dhuhr: "Zuhr",
   asr: "Asr",
   maghrib: "Maghrib",
   isha: "Isha",

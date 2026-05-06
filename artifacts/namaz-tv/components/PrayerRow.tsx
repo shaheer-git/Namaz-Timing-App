@@ -89,7 +89,7 @@ export function PrayerRow({
         { 
           borderBottomWidth: 1 * scale,
           borderBottomColor: dynamic.border,
-          minHeight: tvLikeLayout ? 200 : 55,
+          minHeight: tvLikeLayout ? 155 : 55,
         },
         isHighlighted && { backgroundColor: dynamic.highlight },
       ]}
@@ -109,7 +109,7 @@ export function PrayerRow({
       )}
 
       {/* Aaqri Waqth */}
-      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+      <View style={[styles.cell, { borderRightWidth: 1 * scale, borderRightColor: dynamic.border, paddingVertical: tvLikeLayout ? 18 : 6 }]}>
         <Text style={[styles.timeText, { color: "#FF8C00", fontSize: 48 * scale }, shadow]}>
           {aaqriWaqth}
         </Text>
@@ -156,7 +156,7 @@ export function PrayerRow({
       </View>
 
       {/* Prayer Name Column */}
-      <View style={[styles.cell, styles.nameCell, { paddingVertical: tvLikeLayout ? 30 : 6 }]}>
+      <View style={[styles.cell, styles.nameCell, { paddingVertical: tvLikeLayout ? 18 : 6 }]}>
         <Text style={[styles.arabicName, { color: "#FFFFFF", fontSize: 48 * scale }, shadow]}>
           {arabicName}
         </Text>

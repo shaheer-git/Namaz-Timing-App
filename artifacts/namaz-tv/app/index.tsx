@@ -199,7 +199,7 @@ export default function TVDisplay() {
               <View style={styles.clockRow}>
                 <AnimatedDigit
                   value={time.displayHours}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, glowShadow]}
+                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
                   animateOnChange={true}
                 />
                 <Animated.Text
@@ -209,11 +209,11 @@ export default function TVDisplay() {
                 </Animated.Text>
                 <AnimatedDigit
                   value={time.displayMinutes}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 120 * SCALE }, glowShadow]}
+                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
                   animateOnChange={true}
                 />
                 <View style={[styles.clockMeta, { marginLeft: 8 * SCALE }]}>
-                  <Text style={[styles.clockSeconds, { color: dynamicColors.accent, fontSize: 28 * SCALE }, shadow]}>
+                  <Text style={[styles.clockSeconds, { color: dynamicColors.accent, fontSize: 42 * SCALE }, shadow]}>
                     {time.displaySeconds}
                   </Text>
                   <View style={[styles.periodBadge, { backgroundColor: "rgba(230, 194, 122, 0.2)", borderColor: dynamicColors.accent, paddingHorizontal: 6 * SCALE, paddingVertical: 2 * SCALE }]}>
@@ -255,12 +255,12 @@ export default function TVDisplay() {
                 </View>
               </View>
 
-              <View style={[styles.nextCard, { backgroundColor: "rgba(212, 170, 80, 0.15)", borderColor: "rgba(212, 170, 80, 0.4)" }]}>
-                <Text style={[styles.nextLabel, { color: dynamicColors.accent, fontSize: 18 * SCALE }]}>NEXT PRAYER</Text>
-                <Animated.Text style={[styles.nextName, { color: dynamicColors.text, fontSize: 48 * SCALE }, shadow]}>
+              <View style={[styles.nextCard, { backgroundColor: "rgba(212, 170, 80, 0.15)", borderColor: "rgba(212, 170, 80, 0.4)", padding: 12 * SCALE }]}>
+                <Text style={[styles.nextLabel, { color: dynamicColors.accent, fontSize: 22 * SCALE }]}>NEXT PRAYER</Text>
+                <Animated.Text style={[styles.nextName, { color: dynamicColors.text, fontSize: 62 * SCALE }, shadow]}>
                   {nextPrayer.name}
                 </Animated.Text>
-                <Animated.Text style={[styles.nextTime, { color: dynamicColors.accent, fontSize: 26 * SCALE }, blinkStyle]}>
+                <Animated.Text style={[styles.nextTime, { color: dynamicColors.accent, fontSize: 32 * SCALE }, blinkStyle]}>
                   {nextPrayer.hoursUntil > 0 ? `${nextPrayer.hoursUntil}h ` : ""}{nextPrayer.minutesUntil} min
                 </Animated.Text>
               </View>
@@ -318,7 +318,7 @@ export default function TVDisplay() {
             </View>
           </View>
 
-          <Text style={[styles.watermark, { color: "rgba(255, 255, 255, 0.4)", fontSize: 18 * SCALE }]}>
+          <Text style={[styles.watermark, { color: "rgba(255, 255, 255, 0.8)", fontSize: 22 * SCALE }]}>
             by Shaheer
           </Text>
         </View>
@@ -436,12 +436,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   nextCard: {
-    marginTop: 20,
+    marginTop: 15,
     borderRadius: 16,
     borderWidth: 1.5,
-    padding: 20,
-    gap: 6,
-    marginBottom: 10,
+    padding: 15,
+    gap: 4,
+    marginBottom: 5,
     alignItems: "center",
   },
   nextLabel: {
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     flex: 1,
-    paddingVertical: 25,
+    paddingVertical: 18,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -508,11 +508,11 @@ const styles = StyleSheet.create({
   },
   watermark: {
     position: "absolute",
-    bottom: 10,
-    left: 20,
-    fontWeight: "700",
+    bottom: 15,
+    right: 25,
+    fontWeight: "800",
     fontStyle: "italic",
-    opacity: 0.5,
+    opacity: 0.9,
   },
 });
 
