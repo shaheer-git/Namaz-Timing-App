@@ -157,13 +157,13 @@ export default function TVDisplay() {
           style={[
             styles.inner,
             {
-            paddingTop: Math.max(10, topPad - 80 * SCALE),
-            paddingBottom: botPad + 5 * SCALE,
-            paddingHorizontal: edgePad * 0.5,
-          },
+              paddingTop: Math.max(10, topPad - 80 * SCALE),
+              paddingBottom: botPad + 5 * SCALE,
+              paddingHorizontal: edgePad * 0.5,
+            },
           ]}
         >
-          <View style={[styles.topBar, { marginBottom: 30 * SCALE }]}>
+          <View style={[styles.topBar, { marginBottom: 15 * SCALE }]}>
             <View style={styles.topBarTitlesStack}>
               <Text style={[styles.mosqueName, { color: dynamicColors.mosqueColor, fontSize: 28 * SCALE }, shadow]}>
                 {settings.mosqueName}
@@ -172,54 +172,53 @@ export default function TVDisplay() {
                 {settings.mosqueNameArabic}
               </Text>
             </View>
-            {!tvLikeLayout ? (
-              <TouchableOpacity
-                style={[
-                  styles.settingsBtnMobile,
-                  { backgroundColor: dynamicColors.cardBg, borderColor: dynamicColors.accent }
-                ]}
-                onPress={() => router.push("/settings")}
-              >
-                <Feather name="settings" size={32} color={dynamicColors.accent} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={[styles.settingsBtn, { borderColor: dynamicColors.accent, padding: 10 * SCALE, marginRight: 10 * SCALE }]}
-                onPress={() => router.push("/settings")}
-                hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-              >
-                <Feather name="settings" size={24 * SCALE} color={dynamicColors.accent} />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: 80 * SCALE,
+                height: 80 * SCALE,
+                zIndex: 9999,
+                // Background transparent but clickable
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => router.push("/settings")}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            />
           </View>
 
           <View style={[styles.mainRow, { gap: mainGap }]}>
             {/* Left Side: Clock and Dates */}
             <View style={[styles.leftCol, { gap: 20 * SCALE }]}>
-              <View style={styles.clockRow}>
-                <AnimatedDigit
-                  value={time.displayHours}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
-                  animateOnChange={true}
-                />
-                <Animated.Text
-                  style={[styles.clockColon, { color: dynamicColors.accent, fontSize: 110 * SCALE }, colonStyle, glowShadow]}
-                >
-                  :
-                </Animated.Text>
-                <AnimatedDigit
-                  value={time.displayMinutes}
-                  style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
-                  animateOnChange={true}
-                />
-                <View style={[styles.clockMeta, { marginLeft: 8 * SCALE }]}>
-                  <Text style={[styles.clockSeconds, { color: dynamicColors.accent, fontSize: 42 * SCALE }, shadow]}>
-                    {time.displaySeconds}
-                  </Text>
-                  <View style={[styles.periodBadge, { backgroundColor: "rgba(230, 194, 122, 0.2)", borderColor: dynamicColors.accent, paddingHorizontal: 6 * SCALE, paddingVertical: 2 * SCALE }]}>
-                    <Text style={[styles.periodText, { color: dynamicColors.accent, fontSize: 16 * SCALE }, shadow]}>
-                      {time.period}
+              <View style={{ alignItems: "center" }}>
+                <View>
+                  <View style={styles.clockRow}>
+                    <AnimatedDigit
+                      value={time.displayHours}
+                      style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
+                      animateOnChange={true}
+                    />
+                    <Animated.Text
+                      style={[styles.clockColon, { color: dynamicColors.accent, fontSize: 110 * SCALE }, colonStyle, glowShadow]}
+                    >
+                      :
+                    </Animated.Text>
+                    <AnimatedDigit
+                      value={time.displayMinutes}
+                      style={[styles.clockDigit, { color: dynamicColors.text, fontSize: 145 * SCALE }, glowShadow]}
+                      animateOnChange={true}
+                    />
+                  </View>
+                  <View style={[styles.clockMetaRow, { marginTop: -15 * SCALE, alignSelf: "flex-end", marginRight: 5 * SCALE }]}>
+                    <Text style={[styles.clockSeconds, { color: dynamicColors.accent, fontSize: 42 * SCALE }, shadow]}>
+                      {time.displaySeconds}
                     </Text>
+                    <View style={[styles.periodBadge, { backgroundColor: "rgba(230, 194, 122, 0.2)", borderColor: dynamicColors.accent, paddingHorizontal: 10 * SCALE, paddingVertical: 2 * SCALE, marginLeft: 15 * SCALE }]}>
+                      <Text style={[styles.periodText, { color: dynamicColors.accent, fontSize: 24 * SCALE }, shadow]}>
+                        {time.period}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -243,7 +242,7 @@ export default function TVDisplay() {
                       <Feather name="sunrise" size={24 * SCALE} color={dynamicColors.subText} />
                       <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }]}>SUNRISE</Text>
                     </View>
-                    <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 36 * SCALE }]}>{settings.sunriseTime}</Text>
+                    <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 46 * SCALE }]}>{settings.sunriseTime}</Text>
                   </View>
                 )}
                 <View style={[styles.extraBox, { backgroundColor: dynamicColors.cardBg, borderColor: "rgba(212, 170, 80, 0.3)" }]}>
@@ -251,7 +250,7 @@ export default function TVDisplay() {
                     <Feather name="users" size={24 * SCALE} color={dynamicColors.subText} />
                     <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }]}>JUMU'AH</Text>
                   </View>
-                  <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 36 * SCALE }]}>{settings.jumuahTime}</Text>
+                  <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 46 * SCALE }]}>{settings.jumuahTime}</Text>
                 </View>
               </View>
 
@@ -375,8 +374,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginHorizontal: 4,
   },
-  clockMeta: {
-    gap: 2,
+  clockMetaRow: {
+    flexDirection: "row",
     alignItems: "center",
   },
   clockSeconds: {
@@ -436,7 +435,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   nextCard: {
-    marginTop: 15,
+    marginTop: 0,
     borderRadius: 16,
     borderWidth: 1.5,
     padding: 15,
