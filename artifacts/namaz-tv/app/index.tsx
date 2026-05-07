@@ -172,20 +172,31 @@ export default function TVDisplay() {
                 {settings.mosqueNameArabic}
               </Text>
             </View>
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: 80 * SCALE,
-                height: 80 * SCALE,
-                zIndex: 9999,
-                // Background transparent but clickable
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => router.push("/settings")}
-              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            />
+            {!tvLikeLayout ? (
+              <TouchableOpacity
+                style={[
+                  styles.settingsBtnMobile,
+                  { backgroundColor: dynamicColors.cardBg, borderColor: dynamicColors.accent }
+                ]}
+                onPress={() => router.push("/settings")}
+              >
+                <Feather name="settings" size={32} color={dynamicColors.accent} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: 80 * SCALE,
+                  height: 80 * SCALE,
+                  zIndex: 9999,
+                  backgroundColor: 'transparent',
+                }}
+                onPress={() => router.push("/settings")}
+                hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+              />
+            )}
           </View>
 
           <View style={[styles.mainRow, { gap: mainGap }]}>
