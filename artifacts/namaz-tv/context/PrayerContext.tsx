@@ -164,9 +164,24 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!dayData) return settings;
+    
+    // Calculate sunrise as 1 minute after Fajr Aaqir
+    let sunriseTime = settings.sunriseTime;
+    if (dayData.Fajr_Aaqir) {
+      const [hStr, mStr] = dayData.Fajr_Aaqir.split(":");
+      let h = parseInt(hStr, 10);
+      let m = parseInt(mStr, 10);
+      m += 1;
+      if (m >= 60) {
+        m = 0;
+        h = (h + 1) % 24;
+      }
+      sunriseTime = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
 
     return {
       ...settings,
+      sunriseTime,
       prayerTimes: {
         ...settings.prayerTimes,
         fajr: { ...settings.prayerTimes.fajr, awalWaqth: dayData.Fajr_Awal, aaqriWaqth: dayData.Fajr_Aaqir },
@@ -184,7 +199,10 @@ export function PrayerProvider({ children }: { children: React.ReactNode }) {
       if (settings.useYearlyData && settings.yearlyData) {
         const today = new Date();
         const updated = applyYearlyDataToSettings(settings, today);
-        if (JSON.stringify(updated.prayerTimes) !== JSON.stringify(settings.prayerTimes)) {
+        if (
+          JSON.stringify(updated.prayerTimes) !== JSON.stringify(settings.prayerTimes) ||
+          updated.sunriseTime !== settings.sunriseTime
+        ) {
           setSettings(updated);
           AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         }

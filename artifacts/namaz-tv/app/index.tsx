@@ -70,6 +70,9 @@ export default function TVDisplay() {
   useEffect(() => {
     if (time.seconds === 0) {
       const currentMins = time.hours * 60 + time.minutes;
+      let shouldBeep = false;
+
+      // Check regular prayers
       for (const key of PRAYER_ORDER) {
         const pt = settings.prayerTimes[key];
         if (
@@ -78,12 +81,23 @@ export default function TVDisplay() {
           timeToMinutes(pt.aaqriWaqth, key) === currentMins ||
           timeToMinutes(pt.iqama, key) === currentMins
         ) {
-          playBeep();
+          shouldBeep = true;
           break;
         }
       }
+
+      // Check Jumu'ah on Friday
+      if (!shouldBeep && time.dayName === "Friday" && settings.jumuahTime) {
+        if (timeToMinutes(settings.jumuahTime, "dhuhr") === currentMins) {
+          shouldBeep = true;
+        }
+      }
+
+      if (shouldBeep) {
+        playBeep();
+      }
     }
-  }, [time.hours, time.minutes, time.seconds, settings.prayerTimes, playBeep]);
+  }, [time.hours, time.minutes, time.seconds, time.dayName, settings.prayerTimes, settings.jumuahTime, playBeep]);
 
   const colonOpacity = useSharedValue(1);
   const blinkOpacity = useSharedValue(1);
@@ -172,6 +186,9 @@ export default function TVDisplay() {
                 {settings.mosqueNameArabic}
               </Text>
             </View>
+            <Text style={[styles.watermark, { color: "white", fontSize: 22 * SCALE }]}>
+              by Shaheer
+            </Text>
             {!tvLikeLayout ? (
               <TouchableOpacity
                 style={[
@@ -251,7 +268,7 @@ export default function TVDisplay() {
                   <View style={[styles.extraBox, { backgroundColor: dynamicColors.cardBg, borderColor: "rgba(212, 170, 80, 0.3)" }]}>
                     <View style={styles.extraBoxHeader}>
                       <Feather name="sunrise" size={24 * SCALE} color={dynamicColors.subText} />
-                      <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }]}>SUNRISE</Text>
+                      <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: (tvLikeLayout ? 22 : 14) * SCALE }]}>SUNRISE</Text>
                     </View>
                     <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 46 * SCALE }]}>{settings.sunriseTime}</Text>
                   </View>
@@ -259,7 +276,7 @@ export default function TVDisplay() {
                 <View style={[styles.extraBox, { backgroundColor: dynamicColors.cardBg, borderColor: "rgba(212, 170, 80, 0.3)" }]}>
                   <View style={styles.extraBoxHeader}>
                     <Feather name="users" size={24 * SCALE} color={dynamicColors.subText} />
-                    <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: 14 * SCALE }]}>JUMU'AH</Text>
+                    <Text style={[styles.extraLabel, { color: dynamicColors.subText, fontSize: (tvLikeLayout ? 22 : 14) * SCALE }]}>JUMU'AH</Text>
                   </View>
                   <Text style={[styles.extraValue, { color: dynamicColors.text, fontSize: 46 * SCALE }]}>{settings.jumuahTime}</Text>
                 </View>
@@ -328,9 +345,7 @@ export default function TVDisplay() {
             </View>
           </View>
 
-          <Text style={[styles.watermark, { color: "rgba(255, 255, 255, 0.8)", fontSize: 22 * SCALE }]}>
-            by Shaheer
-          </Text>
+
         </View>
       </ImageBackground>
     </View>
@@ -517,12 +532,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   watermark: {
-    position: "absolute",
-    bottom: 15,
-    right: 25,
     fontWeight: "800",
     fontStyle: "italic",
-    opacity: 0.9,
   },
 });
 
