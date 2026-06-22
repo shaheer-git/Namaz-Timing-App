@@ -27,6 +27,7 @@ export interface PrayerSettings {
   autoStart: boolean;
   useYearlyData: boolean;
   yearlyData?: any[]; // The full 365 days of data
+  hijriAdjustment: number; // -1, 0, or +1 to adjust Hijri date for local moon sighting
 }
 
 const defaultSettings: PrayerSettings = {
@@ -44,6 +45,7 @@ const defaultSettings: PrayerSettings = {
   jumuahTime: "13:45",
   autoStart: true,
   useYearlyData: true,
+  hijriAdjustment: -1,
 };
 
 interface PrayerContextType {

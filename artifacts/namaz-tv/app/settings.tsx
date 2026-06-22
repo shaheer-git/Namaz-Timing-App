@@ -355,6 +355,47 @@ export default function SettingsScreen() {
             color={colors.foreground}
             onSave={(v) => saveSetting("jumuahTime", v)}
           />
+          <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.hijriAdjustRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.switchLabel, { color: colors.foreground }]}>
+                Hijri Date Adjustment
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.mutedForeground }}>
+                Adjust ±1 day to match local moon sighting
+              </Text>
+            </View>
+            <View style={styles.hijriAdjustBtns}>
+              {[-1, 0, 1].map((val) => {
+                const isActive = (settings.hijriAdjustment ?? 0) === val;
+                return (
+                  <TouchableOpacity
+                    key={val}
+                    style={[
+                      styles.hijriAdjustBtn,
+                      {
+                        backgroundColor: isActive ? colors.primary : colors.card,
+                        borderColor: isActive ? colors.primary : colors.border,
+                      },
+                    ]}
+                    onPress={() => {
+                      saveSetting("hijriAdjustment", val);
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.hijriAdjustBtnText,
+                        { color: isActive ? "#fff" : colors.foreground },
+                      ]}
+                    >
+                      {val > 0 ? `+${val}` : String(val)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
         </View>
 
         <View
@@ -667,5 +708,28 @@ const styles = StyleSheet.create({
   actionBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
+  },
+  hijriAdjustRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  hijriAdjustBtns: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  hijriAdjustBtn: {
+    width: 44,
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  hijriAdjustBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

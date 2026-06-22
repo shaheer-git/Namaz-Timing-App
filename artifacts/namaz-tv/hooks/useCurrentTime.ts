@@ -59,39 +59,36 @@ const MONTH_NAMES = [
   "December",
 ];
 
-function toHijri(date: Date): { day: number; month: number; year: number } {
-  const jd =
-    Math.floor((14 + date.getMonth() + 1) / 12);
-  const y = date.getFullYear() + 4800 - jd;
-  const m = date.getMonth() + 1 + 12 * jd - 3;
-  let jdn =
-    date.getDate() +
-    Math.floor((153 * m + 2) / 5) +
-    365 * y +
-    Math.floor(y / 4) -
-    Math.floor(y / 100) +
-    Math.floor(y / 400) -
-    32045;
+/**
+ * Get Hijri date using the browser's built-in Intl.DateTimeFormat API
+ * with the Umm al-Qura calendar (islamic-umalqura).
+ *
+ * This replaces the old custom tabular/Kuwaiti algorithm which drifted
+ * by 1-3 days over time and required manual offset hacks (e.g. -1, -3 days).
+ * The Intl API uses ICU's Umm al-Qura tables, which are accurate and
+ * maintained by the browser vendor — no manual adjustments needed.
+ */
+function getHijriDate(date: Date): { day: number; month: number; year: number } {
+  // Format day, month number, and year separately using islamic-umalqura calendar
+  const dayFormatter = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+    day: "numeric",
+  });
+  const monthFormatter = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+    month: "numeric",
+  });
+  const yearFormatter = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+    year: "numeric",
+  });
 
-  const l = jdn - 1948440 + 10632;
-  const n = Math.floor((l - 1) / 10631);
-  const ll = l - 10631 * n + 354;
-  const j =
-    Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) +
-    Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
-  const lll =
-    ll -
-    Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
-    Math.floor(j / 16) * Math.floor((15238 * j) / 43) +
-    29;
-  const month = Math.floor((24 * lll) / 709);
-  const day = lll - Math.floor((709 * month) / 24);
-  const year = 30 * n + j - 30;
+  const day = parseInt(dayFormatter.format(date), 10);
+  const month = parseInt(monthFormatter.format(date), 10);
+  // Year string may contain " AH" suffix, extract just the number
+  const year = parseInt(yearFormatter.format(date).replace(/[^\d]/g, ""), 10);
 
   return { day, month, year };
 }
 
-export function useCurrentTime(): TimeInfo {
+export function useCurrentTime(hijriAdjustment: number = 0): TimeInfo {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -107,9 +104,12 @@ export function useCurrentTime(): TimeInfo {
   const isAM = hours < 12;
   const hours12 = hours % 12 === 0 ? 12 : hours % 12;
 
-  const hijriDate = new Date(now);
-  hijriDate.setDate(hijriDate.getDate() - 3);
-  const hijri = toHijri(hijriDate);
+  // Apply regional adjustment (e.g. -1 for South Asian moon sighting)
+  const adjustedDate = new Date(now);
+  if (hijriAdjustment !== 0) {
+    adjustedDate.setDate(adjustedDate.getDate() + hijriAdjustment);
+  }
+  const hijri = getHijriDate(adjustedDate);
 
   return {
     hours,

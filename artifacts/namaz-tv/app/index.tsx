@@ -58,7 +58,7 @@ export default function TVDisplay() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { settings } = usePrayer();
-  const time = useCurrentTime();
+  const time = useCurrentTime(settings.hijriAdjustment ?? 0);
   const nextPrayer = useNextPrayer(
     settings.prayerTimes,
     time.hours,
